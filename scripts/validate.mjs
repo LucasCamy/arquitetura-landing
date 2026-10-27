@@ -6,8 +6,8 @@ import { mkdir, writeFile } from 'node:fs/promises'
 const BASE = process.env.BASE_URL ?? 'http://localhost:4317'
 const OUT = '.validation'
 const WIDTHS = [375, 390, 768, 1024, 1280, 1440, 1920]
-const SCENES = ['manifesto', 'projetos', 'croqui', 'materiais', 'luz', 'processo', 'estudio', 'perguntas', 'contato']
-const PINNED = new Set(['manifesto', 'projetos', 'luz'])
+const SCENES = ['manifesto', 'projetos', 'croqui', 'traco', 'materiais', 'processo', 'estudio', 'perguntas', 'contato']
+const PINNED = new Set(['manifesto', 'projetos', 'traco'])
 
 await mkdir(OUT, { recursive: true })
 
@@ -162,7 +162,14 @@ for (const mode of modes) {
     lenis: document.documentElement.classList.contains('lenis'),
     forced: document.documentElement.classList.contains('motion-forced'),
     pins: document.querySelectorAll('.pin-spacer').length,
-    canvas: !!document.querySelector('#luz canvas'),
+    canvas: !!document.querySelector('#traco canvas'),
+    // Divisão de código: o chunk do Lenis só deve chegar com movimento permitido.
+    lenisChunk: performance.getEntriesByType('resource').some((r) => /\/assets\/lenis-/.test(r.name)),
+    belowFoldChunk: performance.getEntriesByType('resource').some((r) => /\/assets\/BelowFold-/.test(r.name)),
+    heroVideo: (() => {
+      const v = document.querySelector('#manifesto video')
+      return v ? { playing: !v.paused, src: v.currentSrc.split('/').pop() } : null
+    })(),
     horizontalTrack: !!document.querySelector('#projetos [data-card]'),
   }))
   let shots = 0
@@ -179,16 +186,16 @@ for (const mode of modes) {
   }
   let canvasDrawn = null
   if (state.canvas) {
-    await scrollTo(page, await sceneY(page, 'luz', 0.5))
+    await scrollTo(page, await sceneY(page, 'traco', 0.5))
     await settle(page, 1500)
     canvasDrawn = await page.evaluate(() => {
-      const c = document.querySelector('#luz canvas')
+      const c = document.querySelector('#traco canvas')
       const d = c.getContext('2d').getImageData(c.width / 2, c.height / 2, 1, 1).data
       const res = performance.getEntriesByType('resource').map((r) => r.name)
       return {
         alpha: d[3],
-        avif: res.filter((n) => n.includes('/frames-v2/') && n.endsWith('.avif')).length,
-        webp: res.filter((n) => n.includes('/frames-v2/') && n.endsWith('.webp')).length,
+        avif: res.filter((n) => n.includes('/frames/') && n.endsWith('.avif')).length,
+        webp: res.filter((n) => n.includes('/frames/') && n.endsWith('.webp')).length,
       }
     })
   }
@@ -226,6 +233,20 @@ for (const mode of modes) {
   r.heroEnd = await photoRect()
   r.heroShrunk = r.heroEnd.w * r.heroEnd.h < r.heroStart.w * r.heroStart.h * 0.45
   await page.screenshot({ path: `${OUT}/hero-shrunk.png` })
+
+  // Vídeo de ambiência: botão de pausa.
+  await scrollTo(page, 0)
+  await settle(page, 800)
+  const pauseBtn = page.getByRole('button', { name: /Pausar movimento|Retomar movimento/ })
+  r.videoBefore = await page.evaluate(() => !document.querySelector('#manifesto video')?.paused)
+  await pauseBtn.click()
+  await settle(page, 300)
+  r.videoAfterPause = await page.evaluate(() => ({
+    paused: document.querySelector('#manifesto video')?.paused,
+    label: [...document.querySelectorAll('#manifesto button')]
+      .map((b) => b.textContent.trim())
+      .find((t) => /movimento/.test(t)),
+  }))
 
   // Trilho horizontal: deslocamento, tema escuro, botões e arraste.
   await scrollTo(page, await sceneY(page, 'projetos', 0))

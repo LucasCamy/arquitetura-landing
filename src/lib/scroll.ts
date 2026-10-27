@@ -2,7 +2,7 @@ import { useSyncExternalStore, type RefObject } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
-import Lenis from 'lenis'
+import type Lenis from 'lenis'
 
 gsap.registerPlugin(ScrollTrigger, useGSAP)
 
@@ -95,19 +95,33 @@ export function useScene(scope: RefObject<HTMLElement | null>, setup: SceneSetup
 let lenis: Lenis | null = null
 let lockCount = 0
 
+/**
+ * Lenis é importado sob demanda: quem prefere movimento reduzido nunca baixa o chunk.
+ * Até ele chegar, a rolagem nativa (com scroll-padding) cobre âncoras e ScrollTrigger.
+ */
 export function initSmoothScroll() {
   if (lenis || !canAnimateNow()) return () => {}
-  // O Lenis já desconta o scroll-padding-top (altura do menu) definido no <html>.
-  const instance = new Lenis({ lerp: 0.085, anchors: true })
-  lenis = instance
-  instance.on('scroll', ScrollTrigger.update)
-  const tick = (time: number) => instance.raf(time * 1000)
-  gsap.ticker.add(tick)
-  gsap.ticker.lagSmoothing(0)
+  let cancelled = false
+  let cleanup = () => {}
+  void import('lenis').then(({ default: LenisClass }) => {
+    if (cancelled || lenis) return
+    // O Lenis já desconta o scroll-padding-top (altura do menu) definido no <html>.
+    const instance = new LenisClass({ lerp: 0.085, anchors: true })
+    lenis = instance
+    if (lockCount > 0) instance.stop()
+    instance.on('scroll', ScrollTrigger.update)
+    const tick = (time: number) => instance.raf(time * 1000)
+    gsap.ticker.add(tick)
+    gsap.ticker.lagSmoothing(0)
+    cleanup = () => {
+      gsap.ticker.remove(tick)
+      instance.destroy()
+      if (lenis === instance) lenis = null
+    }
+  })
   return () => {
-    gsap.ticker.remove(tick)
-    instance.destroy()
-    if (lenis === instance) lenis = null
+    cancelled = true
+    cleanup()
   }
 }
 

@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { materials } from '../../data/content'
 import { cropStyle, generated, media } from '../../data/media'
 import { gsap, ScrollTrigger, useCanAnimate, useIsDesktop, useScene } from '../../lib/scroll'
+import { MediaImage } from '../ui/MediaImage'
 import { RichTitle } from '../ui/RichTitle'
 
 /** SIGN-2: mesa de amostras. Hover, foco, clique ou a própria rolagem trocam a foto aplicada. */
@@ -99,12 +100,11 @@ export function Materials() {
                           i === active ? 'scale-100 opacity-100' : 'scale-[1.04] opacity-0'
                         }`}
                       >
-                        <img
-                          src={media[m.crop.media].src}
-                          alt={i === active ? m.alt : ''}
-                          loading="lazy"
-                          decoding="async"
-                          className="h-full w-full object-cover"
+                        <MediaImage
+                          asset={media[m.crop.media]}
+                          alt={m.alt}
+                          decorative={i !== active}
+                          sizes="(min-width: 1024px) 45vw, 100vw"
                           style={cropStyle(m.crop)}
                         />
                       </div>

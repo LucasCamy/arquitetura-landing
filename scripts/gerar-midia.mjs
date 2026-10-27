@@ -1,5 +1,5 @@
 // Gera mídia derivada no navegador (canvas), sem dependências nativas:
-//  - croqui à mão sobre papel creme, pixel a pixel alinhado a hero-main.webp;
+//  - croqui anotado: sketch-before.webp do pacote (alinhado a hero-main.webp) com cotas e notas à mão;
 //  - seis amostras quadradas de material (travertino, concreto, cumaru, freijó, terracota, linho).
 // Uso: node scripts/gerar-midia.mjs   (grava em public/media/generated/)
 import { chromium } from 'playwright'
@@ -23,7 +23,7 @@ const browser = await launch()
 const page = await browser.newPage()
 await page.setContent('<!doctype html><body></body>')
 
-const heroData = `data:image/webp;base64,${(await readFile('public/media/hero-main.webp')).toString('base64')}`
+const sketchData = `data:image/webp;base64,${(await readFile('public/media/sketch-before.webp')).toString('base64')}`
 
 const save = async (name, dataUrl) => {
   await writeFile(`${OUT}/${name}`, Buffer.from(dataUrl.split(',')[1], 'base64'))
@@ -42,93 +42,6 @@ const croqui = await page.evaluate(async (src) => {
   canvas.height = H
   const ctx = canvas.getContext('2d')
   ctx.drawImage(img, 0, 0)
-  const px = ctx.getImageData(0, 0, W, H).data
-
-  const gray = new Float32Array(W * H)
-  for (let i = 0; i < W * H; i++) gray[i] = 0.299 * px[i * 4] + 0.587 * px[i * 4 + 1] + 0.114 * px[i * 4 + 2]
-
-  const blur = (a, r) => {
-    const tmp = new Float32Array(W * H)
-    const out = new Float32Array(W * H)
-    const n = 2 * r + 1
-    for (let y = 0; y < H; y++) {
-      let s = 0
-      for (let x = -r; x <= r; x++) s += a[y * W + Math.min(W - 1, Math.max(0, x))]
-      for (let x = 0; x < W; x++) {
-        tmp[y * W + x] = s / n
-        s += a[y * W + Math.min(W - 1, x + r + 1)] - a[y * W + Math.max(0, x - r)]
-      }
-    }
-    for (let x = 0; x < W; x++) {
-      let s = 0
-      for (let y = -r; y <= r; y++) s += tmp[Math.min(H - 1, Math.max(0, y)) * W + x]
-      for (let y = 0; y < H; y++) {
-        out[y * W + x] = s / n
-        s += tmp[Math.min(H - 1, y + r + 1) * W + x] - tmp[Math.max(0, y - r) * W + x]
-      }
-    }
-    return out
-  }
-
-  const sobel = (a) => {
-    const m = new Float32Array(W * H)
-    for (let y = 1; y < H - 1; y++)
-      for (let x = 1; x < W - 1; x++) {
-        const i = y * W + x
-        const gx = a[i - W + 1] + 2 * a[i + 1] + a[i + W + 1] - a[i - W - 1] - 2 * a[i - 1] - a[i + W - 1]
-        const gy = a[i + W - 1] + 2 * a[i + W] + a[i + W + 1] - a[i - W - 1] - 2 * a[i - W] - a[i - W + 1]
-        m[i] = Math.hypot(gx, gy)
-      }
-    return m
-  }
-
-  // Equaliza o tom (foto noturna): percentis 3 e 97 viram 0 e 1.
-  const sorted = Float32Array.from(gray).sort()
-  const lo = sorted[Math.floor(sorted.length * 0.03)]
-  const hi = sorted[Math.floor(sorted.length * 0.97)]
-  const norm = new Float32Array(W * H)
-  for (let i = 0; i < W * H; i++) norm[i] = Math.min(1, Math.max(0, (gray[i] - lo) / (hi - lo))) * 255
-
-  const fine = sobel(blur(norm, 1))
-  const coarse = sobel(blur(norm, 3))
-  const tone = blur(norm, 7)
-  const smooth = (v, a, b) => {
-    const t = Math.min(1, Math.max(0, (v - a) / (b - a)))
-    return t * t * (3 - 2 * t)
-  }
-  const hash = (x, y) => {
-    const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453
-    return s - Math.floor(s)
-  }
-
-  const out = ctx.createImageData(W, H)
-  const o = out.data
-  const paper = [241, 233, 217]
-  const lead = [48, 46, 42]
-  for (let y = 0; y < H; y++)
-    for (let x = 0; x < W; x++) {
-      const i = y * W + x
-      const r = px[i * 4]
-      const b = px[i * 4 + 2]
-      const sky = smooth(b - r, 12, 40) // céu azul e o reflexo dele na água
-      const edge = Math.max(smooth(fine[i], 70, 190) * 0.6, smooth(coarse[i], 34, 110)) * (1 - 0.82 * sky)
-      const d = (1 - tone[i] / 255) * (1 - sky)
-      const jitter = 2.4 * Math.sin(y * 0.021 + x * 0.004)
-      // Cada traço de hachura é interrompido ao longo do próprio comprimento, como lápis.
-      const dashA = hash(Math.floor((x + y + jitter) / 11), Math.floor((x - y) / 70)) > 0.3 ? 1 : 0
-      const dashB = hash(Math.floor((x - y + jitter) / 11) + 91, Math.floor((x + y) / 70)) > 0.35 ? 1 : 0
-      let hatch = 0
-      if (d > 0.6 && (((x + y + jitter) % 11) + 11) % 11 < 1.1) hatch = Math.max(hatch, 0.34 * dashA)
-      if (d > 0.78 && (((x - y + jitter) % 11) + 11) % 11 < 1.1) hatch = Math.max(hatch, 0.4 * dashB)
-      if (d > 0.92 && (y + jitter) % 7 < 1) hatch = Math.max(hatch, 0.3)
-      const grain = 0.72 + 0.28 * hash(x, y)
-      const L = Math.min(1, (edge * 0.95 + hatch) * grain)
-      const mottle = (hash(Math.floor(x / 9), Math.floor(y / 9)) - 0.5) * 6 + (hash(x, y) - 0.5) * 7
-      const vig = 1 - 0.06 * Math.hypot(x / W - 0.5, y / H - 0.5)
-      for (let c = 0; c < 3; c++) o[i * 4 + c] = (paper[c] + mottle) * vig * (1 - L) + lead[c] * L
-      o[i * 4 + 3] = 255
-    }
-  ctx.putImageData(out, 0, 0)
 
   // Linhas de construção e cotas, como o arquiteto faria sobre o croqui.
   const pencil = (alpha, width) => {
@@ -145,7 +58,7 @@ const croqui = await page.evaluate(async (src) => {
   // Texto com halo de papel: legível sobre hachura, como letra feita em área poupada.
   const letter = (text, tx, ty) => {
     ctx.save()
-    ctx.strokeStyle = 'rgba(241,233,217,0.92)'
+    ctx.strokeStyle = 'rgba(236,233,226,0.94)'
     ctx.lineWidth = 7
     ctx.lineJoin = 'round'
     ctx.strokeText(text, tx, ty)
@@ -199,7 +112,7 @@ const croqui = await page.evaluate(async (src) => {
   letter('mar. 2022 · C.M.', W * 0.96, H * 0.977)
 
   return canvas.toDataURL('image/webp', 0.86)
-}, heroData)
+}, sketchData)
 await save('croqui-casa-jardim-europa.webp', croqui)
 
 // ---------- Amostras de material ----------

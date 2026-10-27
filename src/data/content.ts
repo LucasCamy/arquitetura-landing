@@ -207,26 +207,27 @@ export const materials: Material[] = [
   },
 ]
 
-export const lightSteps = [
+/** Legendas da sequência de 120 quadros: o croqui técnico vira a obra acesa. */
+export const sketchSteps = [
   {
     index: '01',
-    title: 'Chegada pelo jardim',
-    body: 'O percurso começa na borda do espelho d’água, com a casa inteira à vista e o céu ainda claro.',
+    title: 'Croqui técnico',
+    body: 'Eixos, cotas e linhas de construção sobre papel. A casa existe primeiro no traço.',
   },
   {
     index: '02',
-    title: 'O balanço emoldura a sala',
-    body: 'A laje de 4 m avança sobre a varanda e transforma a fachada envidraçada num quadro.',
+    title: 'O traço ganha corpo',
+    body: 'A varredura revela os planos de concreto e os caixilhos exatamente onde o desenho previu.',
   },
   {
     index: '03',
-    title: 'Brises filtram o poente',
-    body: 'As réguas de cumaru deixam passar a luz do fim de tarde em faixas, sem ofuscar.',
+    title: 'A matéria aparece',
+    body: 'Concreto de fôrma de tábua, brises de cumaru e o espelho d’água ocupam as linhas do estudo.',
   },
   {
     index: '04',
-    title: 'A casa acesa ao anoitecer',
-    body: 'Luz quente indireta, rebatida no forro e no travertino. Nenhuma lâmpada à vista.',
+    title: 'A obra acesa',
+    body: 'Fim de tarde: luz quente por dentro, e a água devolve a casa inteira.',
   },
 ]
 

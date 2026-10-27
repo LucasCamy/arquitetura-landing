@@ -1,4 +1,5 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { Pause, Play } from '@phosphor-icons/react'
 import { hero, manifesto, metrics } from '../../data/content'
 import { media } from '../../data/media'
 import { gsap, ScrollTrigger, useCanAnimate, useGSAP, useIsDesktop, useScene } from '../../lib/scroll'
@@ -21,7 +22,7 @@ function offsetWithin(el: HTMLElement, ancestor: HTMLElement) {
   return { top, left, width: el.offsetWidth, height: el.offsetHeight }
 }
 
-function HeroCopy({ onPhoto = true }: { onPhoto?: boolean }) {
+function HeroCopy({ onPhoto = true, extra }: { onPhoto?: boolean; extra?: ReactNode }) {
   return (
     <div
       className={`shell relative flex h-full flex-col justify-end pt-[72px] pb-10 md:pb-14 ${onPhoto ? 'text-linen' : ''}`}
@@ -45,18 +46,21 @@ function HeroCopy({ onPhoto = true }: { onPhoto?: boolean }) {
             Ver projetos <span aria-hidden="true">↓</span>
           </a>
         </div>
-        <p data-hero-in className="meta flex flex-wrap gap-x-3 opacity-90 md:justify-end md:text-right">
-          {hero.ficha.map((item, i) => (
-            <span key={item}>
-              {i > 0 && (
-                <span aria-hidden="true" className="mr-3">
-                  ·
-                </span>
-              )}
-              {item}
-            </span>
-          ))}
-        </p>
+        <div data-hero-in className="flex flex-col items-start gap-3 md:items-end">
+          {extra}
+          <p className="meta flex flex-wrap gap-x-3 opacity-90 md:justify-end md:text-right">
+            {hero.ficha.map((item, i) => (
+              <span key={item}>
+                {i > 0 && (
+                  <span aria-hidden="true" className="mr-3">
+                    ·
+                  </span>
+                )}
+                {item}
+              </span>
+            ))}
+          </p>
+        </div>
       </div>
     </div>
   )
@@ -115,6 +119,32 @@ function AnimatedHero({ isDesktop }: { isDesktop: boolean }) {
   const stageRef = useRef<HTMLDivElement>(null)
   const targetRef = useRef<HTMLDivElement>(null)
   const photoRef = useRef<HTMLDivElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const userPaused = useRef(false)
+  const [playing, setPlaying] = useState(false)
+
+  // Ambiência em vídeo só no desktop (2,6 MB): no celular fica a fotografia.
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video || !isDesktop) return
+    video.play().then(
+      () => setPlaying(true),
+      () => setPlaying(false),
+    )
+  }, [isDesktop])
+
+  const toggleVideo = () => {
+    const video = videoRef.current
+    if (!video) return
+    if (video.paused) {
+      userPaused.current = false
+      void video.play().then(() => setPlaying(true))
+    } else {
+      userPaused.current = true
+      video.pause()
+      setPlaying(false)
+    }
+  }
 
   useScene(sectionRef, () => {
     const stage = stageRef.current
@@ -156,7 +186,14 @@ function AnimatedHero({ isDesktop }: { isDesktop: boolean }) {
         pin: true,
         scrub: 1,
         invalidateOnRefresh: true,
-        onUpdate: (self) => setThemeFlag('photo', self.progress < 0.22),
+        onUpdate: (self) => {
+          setThemeFlag('photo', self.progress < 0.22)
+          // Fora da tela cheia o vídeo já sumiu: pausa para poupar CPU, retoma ao voltar.
+          const video = videoRef.current
+          if (!video || userPaused.current) return
+          if (self.progress > 0.3 && !video.paused) video.pause()
+          else if (self.progress <= 0.3 && video.paused) void video.play().catch(() => {})
+        },
       },
     })
     tl.fromTo(
@@ -175,6 +212,9 @@ function AnimatedHero({ isDesktop }: { isDesktop: boolean }) {
         0.62,
       )
       .from(q('[data-caption]'), { opacity: 0, duration: 0.2 }, 0.9)
+    // A camada de vídeo só existe no desktop.
+    const ambient = q('[data-ambient]')
+    if (ambient.length) tl.to(ambient, { opacity: 0, duration: 0.25, ease: 'power1.in' }, 0)
     setThemeFlag('photo', (tl.scrollTrigger?.progress ?? 0) < 0.22)
     if (isDesktop) {
       tl.from(q('[data-paragraph]'), { opacity: 0, y: 24, duration: 0.25, stagger: 0.06 }, 0.85)
@@ -278,8 +318,41 @@ function AnimatedHero({ isDesktop }: { isDesktop: boolean }) {
           <div data-scrim aria-hidden="true" className="scrim-hero absolute inset-0" />
         </div>
 
+        {isDesktop && (
+          <div data-ambient aria-hidden="true" className="absolute inset-0">
+            <video
+              ref={videoRef}
+              className="h-full w-full object-cover"
+              src={media.heroAmbient.src}
+              poster={media.hero.avif}
+              muted
+              loop
+              playsInline
+              preload="metadata"
+            />
+            <div className="scrim-hero absolute inset-0" />
+          </div>
+        )}
+
         <div data-hero-copy className="absolute inset-0">
-          <HeroCopy />
+          <HeroCopy
+            extra={
+              isDesktop && (
+                <button
+                  type="button"
+                  onClick={toggleVideo}
+                  className="meta inline-flex min-h-11 items-center gap-2 opacity-90 hover:opacity-100"
+                >
+                  {playing ? (
+                    <Pause size={14} weight="fill" aria-hidden="true" />
+                  ) : (
+                    <Play size={14} weight="fill" aria-hidden="true" />
+                  )}
+                  {playing ? 'Pausar movimento' : 'Retomar movimento'}
+                </button>
+              )
+            }
+          />
         </div>
       </div>
 

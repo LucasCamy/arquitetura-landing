@@ -6,6 +6,8 @@ export type FocalPoint = { x: number; y: number }
 export type MediaAsset = {
   key: string
   src: string
+  /** Versão AVIF (mesmo nome, extensão .avif) quando o ativo é uma imagem WebP. */
+  avif?: string
   alt: string
   aspect: string
   /** Proporção numérica (largura / altura) para reservar espaço sem layout shift. */
@@ -30,8 +32,7 @@ type RawAsset = {
   representativeStockImage?: boolean
 }
 
-// Alternativas v2 (geradas para o projeto) convivem com os ativos originais no mesmo índice.
-const raw = { ...manifest.assets, ...manifest.alternates } as Record<string, RawAsset>
+const raw = manifest.assets as Record<string, RawAsset>
 
 function toRatio(aspect: string) {
   const [w, h] = aspect.split(':').map(Number)
@@ -42,9 +43,11 @@ function build(key: string): MediaAsset {
   const asset = raw[key]
   if (!asset) throw new Error(`Mídia ausente no manifesto: ${key}`)
   const { x, y } = asset.focalPoint
+  const src = `/${asset.path}`
   return {
     key,
-    src: `/${asset.path}`,
+    src,
+    avif: src.endsWith('.webp') ? src.replace(/\.webp$/, '.avif') : undefined,
     alt: asset.alt,
     aspect: asset.expectedAspectRatio,
     ratio: toRatio(asset.expectedAspectRatio),
@@ -67,16 +70,18 @@ export const media = {
   team02: build('team02'),
   team03: build('team03'),
   contact: build('contact'),
-  canvasSequence: build('canvasSequenceV2'),
+  sketch: build('sketchBefore'),
+  heroAmbient: build('heroAmbient'),
+  canvasSequence: build('canvasSequence'),
 } as const
 
 export type MediaKey = keyof typeof media
 
-const sequence = manifest.alternates.canvasSequenceV2
+const sequence = manifest.assets.canvasSequence
 
 export type FrameFormat = 'avif' | 'webp'
 
-/** Quadros da Travessia Espacial (v2): /media/frames-v2/frame_0001.avif|webp .. frame_0120. */
+/** Quadros "do croqui à obra": /media/frames/frame_0001.avif|webp .. frame_0120. */
 export const frameSequence = {
   count: sequence.frameCount,
   width: sequence.frameWidth,
@@ -94,8 +99,8 @@ export const frameSequence = {
 export const generated = {
   croqui: {
     src: '/media/generated/croqui-casa-jardim-europa.webp',
-    alt: 'Croqui a lápis sobre papel creme da mesma casa, no mesmo enquadramento: laje em balanço, brises, caixilhos de piso a teto, espelho d’água e cota de pé-direito de 3,40 m anotada à mão.',
-    credit: 'Gerado para este projeto a partir de hero-main.webp',
+    alt: 'Croqui técnico da mesma casa, no mesmo enquadramento, com anotações à mão: laje em balanço, brise de cumaru, caixilhos de piso a teto, espelho d’água, deck de travertino e cota de pé-direito de 3,40 m.',
+    credit: 'Anotações sobre sketch-before.webp, gerado para este projeto',
   },
   swatch: (id: string) => `/media/generated/amostra-${id}.webp`,
 }
@@ -111,6 +116,9 @@ export function cropStyle(crop: Crop) {
 /** Ativos usados pela página, com crédito, para o bloco de licenças do rodapé. */
 export const mediaCredits = [
   media.hero,
+  media.heroAmbient,
+  media.sketch,
+  media.canvasSequence,
   media.pavilion,
   media.detail,
   media.interior,
@@ -119,7 +127,6 @@ export const mediaCredits = [
   media.team01,
   media.team02,
   media.team03,
-  media.canvasSequence,
 ]
 
 export const licenseNotes = manifest.licenseNotes

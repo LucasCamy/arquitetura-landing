@@ -5,7 +5,6 @@
   "mediaDirectory": "media/",
   "licenseNotes": {
     "unsplash": "Free under the Unsplash License; attribution is appreciated. Check model, property, and trademark rights for the intended commercial use.",
-    "pexels": "Free under the Pexels License; attribution is appreciated. Do not imply that identifiable people or brands endorse the studio.",
     "stockPeople": "Team portraits are illustrative stock photography, not verified partners or staff of the architecture studio. Replace them or obtain appropriate authorization before presenting them as actual team members."
   },
   "assets": {
@@ -15,7 +14,10 @@
       "sourceUrl": null,
       "alt": "Residência brutalista contemporânea em concreto e brises de madeira no blue hour, com luz interior refletida em espelho d’água.",
       "expectedAspectRatio": "4:5",
-      "focalPoint": { "x": 0.53, "y": 0.49 },
+      "focalPoint": {
+        "x": 0.53,
+        "y": 0.49
+      },
       "credit": "Imagem gerada para este projeto"
     },
     "editorial": {
@@ -24,7 +26,10 @@
       "sourceUrl": null,
       "alt": "Mesa de ateliê de arquitetura com maquete física de madeira e concreto, plantas técnicas e luz lateral.",
       "expectedAspectRatio": "4:3",
-      "focalPoint": { "x": 0.48, "y": 0.5 },
+      "focalPoint": {
+        "x": 0.48,
+        "y": 0.5
+      },
       "credit": "Imagem gerada para este projeto"
     },
     "detail": {
@@ -33,7 +38,10 @@
       "sourceUrl": null,
       "alt": "Escada escultórica em balanço de concreto aparente e madeira, atravessada por um feixe geométrico de luz solar.",
       "expectedAspectRatio": "4:3",
-      "focalPoint": { "x": 0.5, "y": 0.5 },
+      "focalPoint": {
+        "x": 0.5,
+        "y": 0.5
+      },
       "credit": "Imagem gerada para este projeto"
     },
     "contact": {
@@ -42,7 +50,10 @@
       "sourceUrl": null,
       "alt": "Ateliê de arquitetura à noite em São Paulo, com pé-direito duplo, maquetes em estantes e grandes janelas para a cidade.",
       "expectedAspectRatio": "16:10",
-      "focalPoint": { "x": 0.53, "y": 0.5 },
+      "focalPoint": {
+        "x": 0.53,
+        "y": 0.5
+      },
       "credit": "Imagem gerada para este projeto"
     },
     "pavilion": {
@@ -53,7 +64,10 @@
       "licenseUrl": "https://unsplash.com/license",
       "alt": "Pavilhão brutalista de concreto com recortes geométricos, sombra profunda e luz natural.",
       "expectedAspectRatio": "4:5",
-      "focalPoint": { "x": 0.53, "y": 0.48 },
+      "focalPoint": {
+        "x": 0.53,
+        "y": 0.48
+      },
       "credit": "studiopipin / Unsplash"
     },
     "interior": {
@@ -64,7 +78,10 @@
       "licenseUrl": "https://unsplash.com/license",
       "alt": "Interior arquitetônico minimalista com estrutura de concreto, cobertura de madeira e grandes vãos envidraçados.",
       "expectedAspectRatio": "4:5",
-      "focalPoint": { "x": 0.53, "y": 0.51 },
+      "focalPoint": {
+        "x": 0.53,
+        "y": 0.51
+      },
       "credit": "Pietro Bolzonetti / Unsplash"
     },
     "team01": {
@@ -74,7 +91,10 @@
       "licenseUrl": "https://unsplash.com/license",
       "alt": "Retrato editorial de uma profissional em blazer cinza, sentada diante de uma janela de escritório.",
       "expectedAspectRatio": "3:4",
-      "focalPoint": { "x": 0.51, "y": 0.36 },
+      "focalPoint": {
+        "x": 0.51,
+        "y": 0.36
+      },
       "credit": "Christina @ wocintechchat.com / Unsplash",
       "representativeStockImage": true
     },
@@ -85,7 +105,10 @@
       "licenseUrl": "https://unsplash.com/license",
       "alt": "Retrato editorial aproximado de uma profissional com blusa clara e fundo neutro.",
       "expectedAspectRatio": "3:4",
-      "focalPoint": { "x": 0.5, "y": 0.34 },
+      "focalPoint": {
+        "x": 0.5,
+        "y": 0.34
+      },
       "credit": "Unsplash photo ID 1580489944761-15a19d654956",
       "representativeStockImage": true
     },
@@ -96,51 +119,80 @@
       "licenseUrl": "https://unsplash.com/license",
       "alt": "Retrato editorial de um profissional em paletó escuro diante de um fundo claro de escritório.",
       "expectedAspectRatio": "3:4",
-      "focalPoint": { "x": 0.5, "y": 0.32 },
+      "focalPoint": {
+        "x": 0.5,
+        "y": 0.32
+      },
       "credit": "Austin Distel / Unsplash",
       "representativeStockImage": true
     },
     "heroAmbient": {
-      "path": "media/hero-ambient.mp4",
-      "sourcePath": "source/architectural-corridor-source.mp4",
-      "sourceUrl": "https://videos.pexels.com/video-files/4351668/4351668-hd_1920_1080_25fps.mp4",
-      "sourcePage": "https://www.pexels.com/video/people-walking-on-a-dark-corridor-4351668/",
-      "licenseUrl": "https://www.pexels.com/license/",
-      "alt": "Vídeo atmosférico de corredor arquitetônico escuro, com movimento e iluminação quente sobre superfícies internas.",
+      "sourceUrl": null,
       "expectedAspectRatio": "16:9",
-      "focalPoint": { "x": 0.5, "y": 0.5 },
+      "focalPoint": {
+        "x": 0.5,
+        "y": 0.5
+      },
       "durationSeconds": 5,
       "frameRate": 24,
-      "loop": true,
       "audio": false,
-      "credit": "Darlene Alderson / Pexels",
-      "processing": "Trecho de 5 s, levemente escurecido e dessaturado, sem áudio."
+      "credit": "Derivado de imagens geradas para este projeto",
+      "path": "media/hero-ambient.mp4",
+      "sourcePaths": [
+        "media/hero-main.webp",
+        "media/bento-02-detail.webp"
+      ],
+      "alt": "Residência brutalista ao blue hour e detalhe de escada de concreto e madeira, com luz e movimento de câmera sutis.",
+      "width": 1920,
+      "height": 1080,
+      "loop": true,
+      "processing": "Loop de 5 s com movimento cíclico de câmera, transição entre residência e escada, luz suave e ondulação no reflexo."
     },
     "canvasSequence": {
-      "path": "media/canvas-sequence.mp4",
-      "sourcePath": "source/architectural-corridor-source.mp4",
-      "sourceUrl": "https://videos.pexels.com/video-files/4351668/4351668-hd_1920_1080_25fps.mp4",
-      "sourcePage": "https://www.pexels.com/video/people-walking-on-a-dark-corridor-4351668/",
-      "licenseUrl": "https://www.pexels.com/license/",
-      "alt": "Sequência arquitetônica contínua de cinco segundos em corredor interno escuro.",
+      "sourceUrl": null,
       "expectedAspectRatio": "16:9",
-      "focalPoint": { "x": 0.5, "y": 0.5 },
+      "focalPoint": {
+        "x": 0.5,
+        "y": 0.5
+      },
       "durationSeconds": 5,
       "frameRate": 24,
+      "audio": false,
+      "credit": "Derivado de imagens geradas para este projeto",
+      "path": "media/canvas-sequence.mp4",
+      "sourcePaths": [
+        "media/sketch-before.webp",
+        "media/hero-main.webp"
+      ],
+      "alt": "Croqui técnico de uma residência brutalista transforma-se gradualmente na fotografia da obra ao blue hour.",
+      "width": 1920,
+      "height": 1080,
       "frameCount": 120,
       "framesDirectory": "media/frames/",
       "framePattern": "media/frames/frame_%04d.webp",
       "frameAvifPattern": "media/frames/frame_%04d.avif",
       "firstFrame": "media/frames/frame_0001.webp",
       "lastFrame": "media/frames/frame_0120.webp",
-      "frameWidth": 1024,
-      "frameHeight": 576,
-      "frameQuality": 80,
+      "frameWidth": 1920,
+      "frameHeight": 1080,
+      "frameQuality": 92,
       "frameAvifCount": 120,
       "frameAvifCodec": "AV1",
-      "frameAvifCrf": 30,
-      "credit": "Darlene Alderson / Pexels",
-      "processing": "Trecho de 5 s sem áudio, H.264 24 fps; 120 WebP e 120 AVIF extraídos em 1024×576."
+      "frameAvifCrf": 27,
+      "processing": "Do Croqui ao Espaço Construído: desenho técnico, varredura diagonal e obra iluminada; 120 quadros."
+    },
+    "sketchBefore": {
+      "path": "media/sketch-before.webp",
+      "sourcePath": "media/hero-main.webp",
+      "sourceUrl": null,
+      "expectedAspectRatio": "4:5",
+      "focalPoint": {
+        "x": 0.53,
+        "y": 0.49
+      },
+      "alt": "Croqui arquitetônico técnico da residência brutalista, em grafite e nanquim sobre papel linho claro.",
+      "credit": "Derivado da imagem gerada para este projeto",
+      "processing": "Detecção de bordas, hachuras e linhas auxiliares sobre papel; mesmas dimensões e enquadramento do hero."
     }
   },
   "alternates": {
@@ -150,7 +202,10 @@
       "sourceUrl": null,
       "alt": "Movimento de aproximação suave e cíclico sobre o ateliê arquitetônico noturno, com maquetes e luzes da cidade.",
       "expectedAspectRatio": "16:9",
-      "focalPoint": { "x": 0.52, "y": 0.5 },
+      "focalPoint": {
+        "x": 0.52,
+        "y": 0.5
+      },
       "durationSeconds": 5,
       "frameRate": 24,
       "loop": true,
@@ -164,7 +219,10 @@
       "sourceUrl": null,
       "alt": "Travessia cinematográfica com aproximação e pan contínuos sobre residência brutalista ao blue hour.",
       "expectedAspectRatio": "16:9",
-      "focalPoint": { "x": 0.53, "y": 0.48 },
+      "focalPoint": {
+        "x": 0.53,
+        "y": 0.48
+      },
       "durationSeconds": 5,
       "frameRate": 24,
       "frameCount": 120,
@@ -188,14 +246,15 @@
     "stillImageFormat": "WebP",
     "stillImageQuality": 84,
     "frameFormat": "WebP",
-    "frameQuality": 80,
+    "frameQuality": 92,
     "frameAvifFormat": "AVIF",
     "frameAvifCodec": "AV1",
-    "frameAvifCrf": 30,
-    "frameWidth": 1024,
-    "frameHeight": 576,
+    "frameAvifCrf": 27,
+    "frameWidth": 1920,
+    "frameHeight": 1080,
     "videoCodec": "H.264",
     "videoDurationSeconds": 5,
-    "notes": "Os quatro visuais-chave foram gerados para este projeto. Fotos de banco e vídeo mantêm crédito e URL de origem."
+    "notes": "Sequências e ambiências são geradas das imagens locais do projeto com Python, OpenCV e FFmpeg.",
+    "frameRate": 24
   }
 }

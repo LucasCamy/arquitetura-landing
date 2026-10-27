@@ -8,8 +8,8 @@
 | 1 | `manifesto` | `HeroManifesto` | HERO-2 | CTAs | pin + scrub + timeline + stagger + contadores |
 | 2 | `projetos` | `Projects` | PORT-2 | arraste, anterior/próximo, gaveta "Pedir portfólio" com formulário | pin + scrub horizontal + parallax + tema escuro |
 | 3 | `croqui` | `Croqui` | SIGN-1 | cortina arrastável/teclado | clip-path + scrub |
+| 3b | `traco` | `SketchSequence` | SIGN-3 | anterior/próximo momento | pin + scrub + canvas + timeline |
 | 4 | `materiais` | `Materials` | SIGN-2 | amostras com hover/foco/clique | pin da coluna + stagger + gatilho por amostra |
-| 4b | `luz` | `LightSequence` | SIGN-3 | anterior/próxima legenda | pin + scrub + canvas + timeline |
 | 5 | `processo` | `Process` | METH-2 | botão de agendamento | pin da coluna + foco de opacidade |
 | 6 | `estudio` | `Studio` | TEAM-2 | — | stagger |
 | 6b | `perguntas` | `Faq` | coluna fixa + acordeão | acordeão | pin da coluna |
@@ -54,7 +54,7 @@ Mantidas: react, react-dom, gsap, @gsap/react, lenis, @phosphor-icons/react, Han
 
 ## Performance
 
-Hero com preload e `fetchpriority="high"`; demais imagens `lazy`; 120 quadros AVIF ≈ 4,2 MB só perto da cena; nenhum valor por quadro em estado React.
+Hero com preload AVIF e `fetchpriority="high"`; fotos em `<picture>` AVIF + WebP; 120 quadros AVIF ≈ 4,1 MB só perto da cena; vídeo do hero só no desktop. Código: bundle inicial (app 16,6 kB + React 68 kB + GSAP 45 kB gzip), `BelowFold` 19,8 kB e Lenis 5,4 kB sob demanda.
 
 ## Testes
 

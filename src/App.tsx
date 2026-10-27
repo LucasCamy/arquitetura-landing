@@ -1,34 +1,16 @@
-import { useCallback, useEffect, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import type { ChapterId } from './data/content'
 import type { LegalDoc } from './data/legal'
 import { BriefingProvider } from './lib/briefing'
-import { applyMotionClass, initSmoothScroll, ScrollTrigger, useGSAP } from './lib/scroll'
+import { applyMotionClass, initSmoothScroll } from './lib/scroll'
 import { Navbar } from './components/nav/Navbar'
 import { ChapterRuler } from './components/nav/ChapterRuler'
 import { FloatingCta } from './components/nav/FloatingCta'
 import { HeroManifesto } from './components/sections/HeroManifesto'
-import { Projects } from './components/sections/Projects'
-import { Croqui } from './components/sections/Croqui'
-import { Materials } from './components/sections/Materials'
-import { LightSequence } from './components/sections/LightSequence'
-import { Process } from './components/sections/Process'
-import { Studio } from './components/sections/Studio'
-import { Faq } from './components/sections/Faq'
-import { Contact } from './components/sections/Contact'
-import { Footer } from './components/sections/Footer'
 
-/** Seções que pertencem a cada capítulo da régua (a cena da luz faz parte de Materiais; perguntas e contato, do Estúdio). */
-const chapterOf: Record<string, ChapterId> = {
-  manifesto: 'manifesto',
-  projetos: 'projetos',
-  croqui: 'croqui',
-  materiais: 'materiais',
-  luz: 'materiais',
-  processo: 'processo',
-  estudio: 'estudio',
-  perguntas: 'estudio',
-  contato: 'estudio',
-}
+// Seções abaixo do hero e rodapé: um chunk separado, buscado depois do primeiro render.
+const BelowFold = lazy(() => import('./BelowFold'))
+const Footer = lazy(() => import('./BelowFold').then((m) => ({ default: m.Footer })))
 
 export function App() {
   const [chapter, setChapter] = useState<ChapterId>('manifesto')
@@ -36,30 +18,16 @@ export function App() {
   const [legal, setLegal] = useState<LegalDoc['id'] | null>(null)
   const [contactVisible, setContactVisible] = useState(false)
   const onContactVisible = useCallback((v: boolean) => setContactVisible(v), [])
+  const onSection = useCallback((id: string, ch: ChapterId) => {
+    setSection(id)
+    setChapter(ch)
+  }, [])
+  const openPrivacy = useCallback(() => setLegal('privacidade'), [])
 
   useEffect(() => {
     applyMotionClass()
     return initSmoothScroll()
   }, [])
-
-  // Roda depois das cenas filhas (pins criados na ordem do documento).
-  useGSAP(() => {
-    Object.keys(chapterOf).forEach((id) =>
-      ScrollTrigger.create({
-        trigger: `#${id}`,
-        start: 'top 50%',
-        end: 'bottom 50%',
-        onToggle: (self) => {
-          if (!self.isActive) return
-          setSection(id)
-          setChapter(chapterOf[id] ?? 'manifesto')
-        },
-      }),
-    )
-    ScrollTrigger.sort()
-    ScrollTrigger.refresh()
-    void document.fonts.ready.then(() => ScrollTrigger.refresh())
-  })
 
   return (
     <BriefingProvider>
@@ -73,18 +41,16 @@ export function App() {
       <ChapterRuler active={chapter} />
       <main id="conteudo" tabIndex={-1} className="outline-none">
         <HeroManifesto />
-        <Projects onOpenPrivacy={() => setLegal('privacidade')} />
-        <Croqui />
-        <Materials />
-        <LightSequence />
-        <Process />
-        <Studio />
-        <Faq />
-        <Contact onOpenPrivacy={() => setLegal('privacidade')} onVisible={onContactVisible} />
+        {/* Altura reservada enquanto o chunk chega, para o hero não encostar no rodapé. */}
+        <Suspense fallback={<div aria-hidden="true" className="min-h-[200vh] bg-night" />}>
+          <BelowFold onOpenPrivacy={openPrivacy} onContactVisible={onContactVisible} onSection={onSection} />
+        </Suspense>
       </main>
-      <Footer legal={legal} onOpenLegal={setLegal} />
+      <Suspense fallback={null}>
+        <Footer legal={legal} onOpenLegal={setLegal} />
+      </Suspense>
       {/* Some no hero (que já tem o CTA) e nas cenas fixadas com controles no canto inferior. */}
-      <FloatingCta hidden={contactVisible || ['manifesto', 'projetos', 'luz'].includes(section)} />
+      <FloatingCta hidden={contactVisible || ['manifesto', 'projetos', 'traco'].includes(section)} />
     </BriefingProvider>
   )
 }

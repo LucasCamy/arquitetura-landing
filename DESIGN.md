@@ -87,7 +87,8 @@ Fazer uma família sentir, antes de qualquer argumento, que esta arquiteta enten
 1. **Hero que encolhe para o Manifesto** (HERO-2): a foto em tela cheia se recorta (`clip-path`) até a moldura da coluna direita enquanto o texto do manifesto entra.
 2. **Cortina Croqui ↔ Obra** (SIGN-1): croqui a lápis gerado a partir da própria fotografia (mesmas dimensões, alinhamento pixel a pixel) sobre papel creme, com cotas e anotações.
 3. **Mesa de materiais** (SIGN-2): seis amostras geradas em canvas trocam a fotografia aplicada.
-4. **A luz na matéria** (SIGN-3): 120 quadros em `<canvas>`.
+4. **Do traço à obra** (SIGN-3): 120 quadros em `<canvas>` em que o croqui técnico vira a fotografia da obra acesa, num palco claro e emoldurado logo após a cortina.
+5. **Ambiência no hero**: loop de vídeo (residência e escada) só no desktop com movimento, com botão "Pausar movimento"; some quando a foto começa a encolher.
 
 ## Motion
 
@@ -103,7 +104,7 @@ Fazer uma família sentir, antes de qualquer argumento, que esta arquiteta enten
 | Timeline | foto encolhe → título do manifesto sobe → parágrafos → métricas | sequência editorial |
 | Clip-path | hero → moldura, cortina croqui, foto do contato | revelar/comparar |
 | Parallax | fotos dentro dos cards do trilho | profundidade ao deslizar |
-| Canvas | luz na matéria | percorrer o espaço |
+| Canvas | do traço à obra | o desenho vira casa |
 | Stagger | palavras dos títulos, métricas, amostras | elementos da mesma família |
 
 Movimento reduzido: sem Lenis, pin ou scrub; hero estático seguido do manifesto; galeria empilhada; cortina parada em 50 % (arraste e teclado continuam); quadros viram uma imagem com as 4 legendas. `?movimento=1` força as animações; `?movimento=0` força a versão estática.
@@ -130,7 +131,7 @@ Um `h1`; skip link; foco visível; diálogos `<dialog>` modais; cortina com `rol
 - Formulários: contato (nome, e-mail, telefone opcional, tipo de projeto, metragem, local da obra, mensagem) e pedido de portfólio (nome, e-mail, tipo). Envio simulado. Base provável: procedimentos preliminares a pedido do titular; aviso junto ao botão, sem caixa obrigatória (confirmar com advogado).
 - Sem rastreadores, cookies próprios ou embeds; fontes self-hosted: em princípio sem banner (confirmar).
 - Retratos: stock ilustrativo, aviso visível. Pessoas, obras, números e CAU demonstrativos.
-- Sequência de quadros: conjunto v2 gerado para o projeto (o v1 do Pexels mostra pessoas identificáveis e uma marca).
+- Vídeos e quadros: derivados das imagens geradas para o projeto (o pacote não usa mais material do Pexels).
 - Razão social, CNPJ e endereço completo: pendentes visíveis. Minutas marcadas como tal.
 
 ## Do's e don'ts
