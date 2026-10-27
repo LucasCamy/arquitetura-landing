@@ -1,58 +1,59 @@
-/* Tokens do Atelier Vértice. Valores e contraste documentados em DESIGN.md. */
+/* Tokens da Moura Arquitetura e Interiores (ARQ-B). Contraste documentado em DESIGN.md. */
 :root {
-  --basalt: #0c0c0b;
-  --stone: #141412;
-  --stone-2: #1b1b18;
-  --line: rgba(239, 236, 230, 0.12);
-  --line-strong: rgba(239, 236, 230, 0.28);
-  --limestone: #efece6;
-  --ash: #9a968e;
-  --clay: #c65d3b;
-  --clay-ink: #d9774f;
-  --ok: #9cc3a0;
-  --error: #e58a72;
-  --scrim: rgba(12, 12, 11, 0.88);
+  --linen: #f2efe9;
+  --sand: #e8e2d7;
+  --ink: #1c1b18;
+  --ink-2: #6e6960;
+  --ink-2-deep: #5c574f;
+  --clay: #b85d3b;
+  --clay-ink: #9a4a2c;
+  --night: #191815;
+  --night-2: #a39e94;
+  --clay-glow: #d98a69;
+  --line: rgba(28, 27, 24, 0.14);
+  --line-night: rgba(242, 239, 233, 0.16);
+  --ok: #3f6b4a;
+  --error: #a3392b;
 
-  --font-display: 'Big Shoulders Display Variable', 'Arial Narrow', sans-serif;
+  --font-serif: 'Newsreader Variable', Georgia, serif;
   --font-sans: 'Hanken Grotesk Variable', system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 
-  --nav-h: 64px;
-
+  --nav-h: 72px;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-  --dur-1: 120ms;
-  --dur-2: 180ms;
-  --dur-3: 280ms;
-  --dur-4: 560ms;
-  --dur-5: 900ms;
+  --shadow-soft: 0 30px 60px -30px rgba(28, 27, 24, 0.45);
 
-  --shadow-dialog: 0 24px 60px -20px rgba(12, 12, 11, 0.9);
+  /* Variáveis de tema alteradas pelo capítulo escuro e pela foto do hero. */
+  --page-bg: var(--linen);
+  --page-fg: var(--ink);
+  --nav-bg: rgba(242, 239, 233, 0.92);
+  --nav-fg: var(--ink);
+  --nav-line: var(--line);
+  --rail-fg: var(--ink);
 }
 
 @theme inline {
-  --color-basalt: var(--basalt);
-  --color-stone: var(--stone);
-  --color-stone-2: var(--stone-2);
-  --color-line: var(--line);
-  --color-line-strong: var(--line-strong);
-  --color-limestone: var(--limestone);
-  --color-ash: var(--ash);
+  --color-linen: var(--linen);
+  --color-sand: var(--sand);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-2-deep: var(--ink-2-deep);
   --color-clay: var(--clay);
   --color-clay-ink: var(--clay-ink);
+  --color-night: var(--night);
+  --color-night-2: var(--night-2);
+  --color-clay-glow: var(--clay-glow);
+  --color-line: var(--line);
+  --color-line-night: var(--line-night);
   --color-ok: var(--ok);
   --color-error: var(--error);
-  --color-scrim: var(--scrim);
 
-  --font-display: var(--font-display);
+  --font-serif: var(--font-serif);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
 
-  --radius-badge: 2px;
-  --radius-control: 4px;
-  --radius-dialog: 6px;
-
   --ease-out: var(--ease-out);
   --ease-in-out: var(--ease-in-out);
-  --shadow-dialog: var(--shadow-dialog);
+  --shadow-soft: var(--shadow-soft);
 }

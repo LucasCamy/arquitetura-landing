@@ -59,8 +59,6 @@ function build(key: string): MediaAsset {
 
 export const media = {
   hero: build('hero'),
-  // v2: pan noturno sobre o ateliê, sem pessoas nem marcas (o v1 do Pexels mostrava ambos).
-  heroAmbient: build('heroAmbientV2'),
   editorial: build('editorial'),
   pavilion: build('pavilion'),
   detail: build('detail'),
@@ -92,7 +90,36 @@ export const frameSequence = {
     )}`,
 }
 
-/** Todos os ativos com crédito, para o bloco de licenças do rodapé. */
-export const mediaCredits = Object.values(media)
+/** Mídia derivada gerada por scripts/gerar-midia.mjs (canvas no navegador). */
+export const generated = {
+  croqui: {
+    src: '/media/generated/croqui-casa-jardim-europa.webp',
+    alt: 'Croqui a lápis sobre papel creme da mesma casa, no mesmo enquadramento: laje em balanço, brises, caixilhos de piso a teto, espelho d’água e cota de pé-direito de 3,40 m anotada à mão.',
+    credit: 'Gerado para este projeto a partir de hero-main.webp',
+  },
+  swatch: (id: string) => `/media/generated/amostra-${id}.webp`,
+}
+
+/** Recorte de uma fotografia para mostrar um material aplicado (foco + aproximação). */
+export type Crop = { media: MediaKey; x: number; y: number; zoom: number }
+
+export function cropStyle(crop: Crop) {
+  const position = `${crop.x * 100}% ${crop.y * 100}%`
+  return { objectPosition: position, transformOrigin: position, transform: `scale(${crop.zoom})` }
+}
+
+/** Ativos usados pela página, com crédito, para o bloco de licenças do rodapé. */
+export const mediaCredits = [
+  media.hero,
+  media.pavilion,
+  media.detail,
+  media.interior,
+  media.editorial,
+  media.contact,
+  media.team01,
+  media.team02,
+  media.team03,
+  media.canvasSequence,
+]
 
 export const licenseNotes = manifest.licenseNotes

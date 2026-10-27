@@ -5,9 +5,9 @@ import { mkdir, writeFile } from 'node:fs/promises'
 
 const BASE = process.env.BASE_URL ?? 'http://localhost:4317'
 const OUT = '.validation'
-const WIDTHS = [375, 390, 768, 1024, 1280, 1440, 1920, 2560]
-const SCENES = ['inicio', 'estudio', 'obras', 'travessia', 'metodo', 'socios', 'duvidas', 'contato']
-const PINNED = new Set(['inicio', 'travessia', 'metodo'])
+const WIDTHS = [375, 390, 768, 1024, 1280, 1440, 1920]
+const SCENES = ['manifesto', 'projetos', 'croqui', 'materiais', 'luz', 'processo', 'estudio', 'perguntas', 'contato']
+const PINNED = new Set(['manifesto', 'projetos', 'luz'])
 
 await mkdir(OUT, { recursive: true })
 
@@ -55,6 +55,13 @@ const overflowScript = () => {
 
 const browser = await launch()
 const report = { base: BASE, widths: [], modes: [], interactions: {}, errors: [] }
+// Grava o relatório parcial se alguma etapa falhar.
+process.on('uncaughtException', async (err) => {
+  report.fatal = String(err.message ?? err)
+  await writeFile(`${OUT}/report.json`, JSON.stringify(report, null, 2))
+  console.error(err)
+  process.exit(1)
+})
 
 function track(page, label) {
   page.on('pageerror', (err) => report.errors.push(`${label} pageerror: ${err.message}`))
@@ -64,10 +71,10 @@ function track(page, label) {
   })
 }
 
-async function settle(page, ms = 1600) {
-  await page.waitForTimeout(ms)
-}
+const settle = (page, ms = 1600) => page.waitForTimeout(ms)
+const scrollTo = (page, y) => page.evaluate((y) => window.scrollTo({ top: y, behavior: 'instant' }), y)
 
+/** Posição de uma cena; em cenas fixadas, `fraction` percorre a duração do pin. */
 async function sceneY(page, id, fraction) {
   return page.evaluate(
     ({ id, fraction }) => {
@@ -75,8 +82,9 @@ async function sceneY(page, id, fraction) {
       if (!el) return 0
       const top = el.getBoundingClientRect().top + window.scrollY
       const spacer = el.querySelector('.pin-spacer')
-      const extra = spacer ? spacer.getBoundingClientRect().height - window.innerHeight : 0
-      return Math.max(0, top - (spacer ? 0 : 64) + Math.max(0, extra) * fraction)
+      if (!spacer) return Math.max(0, top - 72)
+      const extra = spacer.getBoundingClientRect().height - window.innerHeight
+      return Math.max(0, top + Math.max(0, extra) * fraction)
     },
     { id, fraction },
   )
@@ -84,42 +92,37 @@ async function sceneY(page, id, fraction) {
 
 async function scrollAll(page) {
   const h = await page.evaluate(() => document.documentElement.scrollHeight)
-  for (let y = 0; y < h; y += 600) {
-    await page.evaluate((y) => window.scrollTo({ top: y, behavior: 'instant' }), y)
+  for (let y = 0; y < h; y += 700) {
+    await scrollTo(page, y)
     await page.waitForTimeout(40)
   }
-  await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }))
+  await scrollTo(page, await page.evaluate(() => document.documentElement.scrollHeight))
   await settle(page, 800)
 }
 
-// 1) Overflow e âncoras em todas as larguras (movimento permitido), no topo e após percorrer a página.
+// 1) Overflow, âncoras e linhas do h1 nas larguras pedidas.
 for (const width of WIDTHS) {
   const context = await browser.newContext({ viewport: { width, height: 900 }, reducedMotion: 'no-preference' })
   const page = await context.newPage()
   track(page, `w${width}`)
   await page.goto(BASE, { waitUntil: 'networkidle' })
-  await settle(page, 2600)
+  await settle(page, 1800)
   const top = await page.evaluate(overflowScript)
   const h1 = await page.evaluate(() => {
     const h = document.querySelector('h1')
     if (!h) return null
-    const lines = [...h.querySelectorAll('[data-hero-line]')].map((l) => Math.round(l.getBoundingClientRect().height))
     const lh = parseFloat(getComputedStyle(h).lineHeight)
-    return {
-      height: Math.round(h.getBoundingClientRect().height),
-      lineHeight: lh,
-      lines: Math.round(h.getBoundingClientRect().height / lh),
-    }
+    return { lines: Math.round(h.getBoundingClientRect().height / lh) }
   })
-  const wrappedButtons = await page.evaluate(() =>
-    [...document.querySelectorAll('.btn')]
+  const wrappedPills = await page.evaluate(() =>
+    [...document.querySelectorAll('.pill')]
       .filter((b) => b.getBoundingClientRect().width > 0 && b.getBoundingClientRect().height > 56)
       .map((b) => b.textContent.trim()),
   )
+  await page.screenshot({ path: `${OUT}/hero-${width}.png` })
   await scrollAll(page)
   const bottom = await page.evaluate(overflowScript)
-  await page.screenshot({ path: `${OUT}/hero-${width}.png` })
-  report.widths.push({ width, top, bottom, h1, wrappedButtons })
+  report.widths.push({ width, top, bottom, h1, wrappedPills })
   await context.close()
 }
 
@@ -154,181 +157,218 @@ for (const mode of modes) {
   const page = await context.newPage()
   track(page, mode.name)
   await page.goto(BASE + mode.query, { waitUntil: 'networkidle' })
-  await settle(page, 2600)
+  await settle(page, 2000)
   const state = await page.evaluate(() => ({
     lenis: document.documentElement.classList.contains('lenis'),
     forced: document.documentElement.classList.contains('motion-forced'),
     pins: document.querySelectorAll('.pin-spacer').length,
-    canvas: !!document.querySelector('#travessia canvas'),
-    staticGrid: document.querySelectorAll('#travessia ol img').length,
-    methodHorizontal: !!document.querySelector('[data-method-fill]'),
+    canvas: !!document.querySelector('#luz canvas'),
+    horizontalTrack: !!document.querySelector('#projetos [data-card]'),
   }))
-  const shots = []
+  let shots = 0
   for (const id of SCENES) {
-    const fractions = PINNED.has(id) ? [0, 0.5, 0.95] : [0]
+    const fractions = PINNED.has(id) && state.pins ? [0, 0.5, 1] : [0]
     for (const f of fractions) {
-      const y = await sceneY(page, id, f)
-      await page.evaluate((y) => window.scrollTo({ top: y, behavior: 'instant' }), y)
+      await scrollTo(page, await sceneY(page, id, f))
       await settle(page, 1500)
-      const file = `${OUT}/${mode.name}-${id}${fractions.length > 1 ? `-${Math.round(f * 100)}` : ''}.png`
-      await page.screenshot({ path: file })
-      shots.push(file)
+      await page.screenshot({
+        path: `${OUT}/${mode.name}-${id}${fractions.length > 1 ? `-${Math.round(f * 100)}` : ''}.png`,
+      })
+      shots += 1
     }
   }
-  // Canvas: algum quadro desenhado (pixel não totalmente transparente).
   let canvasDrawn = null
   if (state.canvas) {
-    const y = await sceneY(page, 'travessia', 0.5)
-    await page.evaluate((y) => window.scrollTo({ top: y, behavior: 'instant' }), y)
+    await scrollTo(page, await sceneY(page, 'luz', 0.5))
     await settle(page, 1500)
     canvasDrawn = await page.evaluate(() => {
-      const c = document.querySelector('#travessia canvas')
-      const ctx = c.getContext('2d')
-      const d = ctx.getImageData(c.width / 2, c.height / 2, 1, 1).data
+      const c = document.querySelector('#luz canvas')
+      const d = c.getContext('2d').getImageData(c.width / 2, c.height / 2, 1, 1).data
       const res = performance.getEntriesByType('resource').map((r) => r.name)
       return {
-        w: c.width,
-        h: c.height,
         alpha: d[3],
         avif: res.filter((n) => n.includes('/frames-v2/') && n.endsWith('.avif')).length,
         webp: res.filter((n) => n.includes('/frames-v2/') && n.endsWith('.webp')).length,
-        ambient: res.filter((n) => n.includes('hero-ambient')).map((n) => n.split('/').pop()),
       }
     })
   }
   const overflow = await page.evaluate(overflowScript)
-  report.modes.push({ mode: mode.name, state, canvasDrawn, overflow, shots: shots.length })
+  report.modes.push({ mode: mode.name, state, canvasDrawn, overflow, shots })
   await context.close()
 }
 
-// 3) Interações (desktop com movimento).
+// 3) Interações e cenas-assinatura (desktop com movimento).
 {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'no-preference' })
   const page = await context.newPage()
   track(page, 'interactions')
   await page.goto(BASE, { waitUntil: 'networkidle' })
-  await settle(page, 2400)
+  await settle(page, 2000)
   const r = {}
 
-  // Âncora da navbar com Lenis: seção para logo abaixo do menu.
-  await page.getByRole('navigation', { name: 'Principal' }).getByRole('link', { name: 'Sócios' }).click()
-  await settle(page, 2200)
-  r.anchorSocios = await page.evaluate(() => Math.round(document.getElementById('socios').getBoundingClientRect().top))
-  r.navCurrent = await page.evaluate(
-    () => document.querySelector('nav[aria-label="Principal"] [aria-current]')?.textContent,
+  // Hero encolhe para a moldura do manifesto.
+  const photoRect = () =>
+    page.evaluate(() => {
+      const img = document.querySelector('#manifesto [data-photo-img]')
+      const b = img.parentElement.getBoundingClientRect()
+      const clip = getComputedStyle(img.parentElement).clipPath
+      return {
+        w: Math.round(b.width),
+        h: Math.round(b.height),
+        left: Math.round(b.left),
+        clip,
+        theme: document.documentElement.dataset.theme,
+      }
+    })
+  r.heroStart = await photoRect()
+  await scrollTo(page, await sceneY(page, 'manifesto', 1))
+  await settle(page, 2000)
+  r.heroEnd = await photoRect()
+  r.heroShrunk = r.heroEnd.w * r.heroEnd.h < r.heroStart.w * r.heroStart.h * 0.45
+  await page.screenshot({ path: `${OUT}/hero-shrunk.png` })
+
+  // Trilho horizontal: deslocamento, tema escuro, botões e arraste.
+  await scrollTo(page, await sceneY(page, 'projetos', 0))
+  await settle(page, 1500)
+  const trackX = () =>
+    page.evaluate(() => new DOMMatrix(getComputedStyle(document.querySelector('#projetos ol')).transform).m41)
+  r.trackStartX = Math.round(await trackX())
+  r.themeInProjects = await page.evaluate(() => document.documentElement.dataset.theme)
+  await scrollTo(page, await sceneY(page, 'projetos', 0.6))
+  await settle(page, 1800)
+  r.trackMidX = Math.round(await trackX())
+  r.counter = await page.evaluate(() => document.querySelector('#projetos [aria-live]')?.textContent)
+  await page.mouse.move(900, 450)
+  await settle(page, 500)
+  r.sealVisible = await page.evaluate(() => {
+    const s = [...document.querySelectorAll('#projetos [aria-hidden="true"]')].find((n) => n.textContent === 'Arraste')
+    return s ? Number(getComputedStyle(s).opacity) > 0.5 : false
+  })
+  await page.screenshot({ path: `${OUT}/projetos-arraste.png` })
+  const beforeDrag = await page.evaluate(() => window.scrollY)
+  await page.mouse.down()
+  await page.mouse.move(500, 450, { steps: 8 })
+  await page.mouse.up()
+  await settle(page, 600)
+  r.dragScrolled = Math.round((await page.evaluate(() => window.scrollY)) - beforeDrag)
+  await page.getByRole('button', { name: 'Projeto anterior' }).click()
+  await settle(page, 1800)
+  r.counterAfterPrev = await page.evaluate(() => document.querySelector('#projetos [aria-live]')?.textContent)
+
+  // Gaveta de portfólio.
+  await scrollTo(page, await sceneY(page, 'projetos', 1))
+  await settle(page, 1500)
+  await page.getByRole('button', { name: /Pedir portfólio/ }).click()
+  await settle(page, 400)
+  r.drawerOpen = await page.evaluate(
+    () => !!document.querySelector('dialog[open]') && document.documentElement.classList.contains('lenis-stopped'),
+  )
+  await page.getByRole('button', { name: /Receber o portfólio/ }).click()
+  await settle(page, 300)
+  r.drawerErrors = await page.evaluate(() => document.querySelectorAll('dialog[open] [role="alert"]').length)
+  await page.screenshot({ path: `${OUT}/dialog-portfolio.png` })
+  await page.fill('dialog[open] input[name="nome"]', 'Marina Teste')
+  await page.fill('dialog[open] input[name="email"]', 'marina@exemplo.example')
+  await page.selectOption('dialog[open] select[name="tipo"]', 'casa-nova')
+  await page.getByRole('button', { name: /Receber o portfólio/ }).click()
+  await settle(page, 1600)
+  r.drawerSuccess = await page.evaluate(() => document.activeElement?.textContent)
+  await page.keyboard.press('Escape')
+  await settle(page, 300)
+  r.drawerClosedFocus = await page.evaluate(() => document.activeElement?.textContent?.trim())
+
+  // Cortina croqui ↔ obra: varredura pelo scroll, arraste e teclado.
+  await page.evaluate(() => document.getElementById('croqui').scrollIntoView())
+  await settle(page, 1800)
+  const slider = page.getByRole('slider')
+  r.curtainAfterScroll = Number(await slider.getAttribute('aria-valuenow'))
+  const box = await page.evaluate(() => {
+    const b = document.querySelector('#croqui [role="slider"]').parentElement.getBoundingClientRect()
+    return { x: b.left, y: b.top, w: b.width, h: b.height }
+  })
+  await page.mouse.move(box.x + box.w * 0.5, box.y + box.h * 0.5)
+  await page.mouse.down()
+  await page.mouse.move(box.x + box.w * 0.8, box.y + box.h * 0.5, { steps: 6 })
+  await page.mouse.up()
+  r.curtainAfterDrag = Number(await slider.getAttribute('aria-valuenow'))
+  await slider.focus()
+  await page.keyboard.press('ArrowLeft')
+  r.curtainAfterArrow = Number(await slider.getAttribute('aria-valuenow'))
+  await page.keyboard.press('Home')
+  r.curtainHome = Number(await slider.getAttribute('aria-valuenow'))
+  await page.keyboard.press('PageUp')
+  await page.keyboard.press('PageUp')
+  await page.screenshot({ path: `${OUT}/croqui-40.png` })
+
+  // Materiais: hover e foco trocam a foto e a legenda.
+  await page.evaluate(() => document.getElementById('materiais').scrollIntoView())
+  await settle(page, 1500)
+  await page.getByRole('button', { name: /Cumaru/ }).hover()
+  await settle(page, 900)
+  r.materialHover = await page.evaluate(() => ({
+    pressed: document.querySelector('#materiais [aria-pressed="true"]')?.textContent?.slice(0, 12),
+    caption: document.querySelector('#materiais figcaption')?.textContent,
+  }))
+  await page.screenshot({ path: `${OUT}/materiais-cumaru.png` })
+  await page.getByRole('button', { name: /Linho/ }).focus()
+  await settle(page, 300)
+  r.materialFocus = await page.evaluate(() => document.querySelector('#materiais figcaption')?.textContent)
+
+  // Processo: etapa no centro fica opaca.
+  await page.evaluate(() => document.querySelectorAll('#processo [data-step]')[2].scrollIntoView({ block: 'center' }))
+  await settle(page, 1500)
+  r.processOpacity = await page.evaluate(() =>
+    [...document.querySelectorAll('#processo [data-step]')].map((s) => Number(getComputedStyle(s).opacity).toFixed(2)),
+  )
+  await page.screenshot({ path: `${OUT}/processo-foco.png` })
+
+  // Âncora da navbar.
+  await page.getByRole('navigation', { name: 'Principal' }).getByRole('link', { name: 'Estúdio' }).click()
+  await settle(page, 2400)
+  r.anchorEstudio = await page.evaluate(() =>
+    Math.round(document.getElementById('estudio').getBoundingClientRect().top),
   )
 
-  // Pilar abre diálogo e pausa o Lenis.
-  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
+  // Acordeão.
+  await page.evaluate(() => document.getElementById('perguntas').scrollIntoView())
   await settle(page, 800)
-  await page
-    .getByRole('button', { name: /Estrutura/ })
-    .first()
-    .click()
-  await settle(page, 400)
-  r.pillarDialog = await page.evaluate(() => ({
-    open: !!document.querySelector('dialog[open]'),
-    lenisStopped: document.documentElement.classList.contains('lenis-stopped'),
-    title: document.querySelector('dialog[open] h2')?.textContent,
-  }))
-  const before = await page.evaluate(() => window.scrollY)
-  await page.mouse.wheel(0, 900)
-  await settle(page, 600)
-  r.scrollLockedWhileDialog = (await page.evaluate(() => window.scrollY)) === before
-  await page.screenshot({ path: `${OUT}/dialog-pilar.png` })
-  await page.keyboard.press('Escape')
-  await settle(page, 400)
-  r.pillarFocusReturned = await page.evaluate(() => document.activeElement?.textContent?.includes('Estrutura'))
-  r.lenisResumed = await page.evaluate(() => !document.documentElement.classList.contains('lenis-stopped'))
-
-  // Filtro de obras.
-  await page.evaluate(() => document.getElementById('obras').scrollIntoView())
-  await settle(page, 600)
-  await page.getByRole('button', { name: 'Urbano e Cultural' }).click()
-  await settle(page, 400)
-  r.filterUrbano = await page.evaluate(() => ({
-    pressed: document.querySelector('[aria-pressed="true"]')?.textContent,
-    status: [...document.querySelectorAll('#obras [aria-live]')].map((n) => n.textContent).join(),
-    cards: document.querySelectorAll('#obras [data-row] li').length,
-  }))
-  await page.getByRole('button', { name: 'Todas as Frentes' }).click()
-  await settle(page, 400)
-
-  // Prancha técnica → iniciar estudo leva a tipologia ao formulário.
-  await page.getByRole('button', { name: /Explorar Edifícios Boutique/ }).click()
-  await settle(page, 400)
-  r.prancha = await page.evaluate(() => ({
-    title: document.querySelector('dialog[open] h2')?.textContent,
-    svg: !!document.querySelector('dialog[open] svg[role="img"]'),
-  }))
-  await page.screenshot({ path: `${OUT}/dialog-prancha.png` })
-  await page.getByRole('button', { name: 'Iniciar estudo nesta tipologia' }).click()
-  await settle(page, 2600)
-  r.briefingPreset = await page.evaluate(() => ({
-    scope: document.querySelector('#contato select')?.value,
-    contactTop: Math.round(document.getElementById('contato').getBoundingClientRect().top),
-    focused: document.activeElement?.getAttribute('name'),
-  }))
-
-  // Formulário: erros, depois sucesso.
-  await page.getByRole('button', { name: 'Enviar briefing' }).click()
-  await settle(page, 300)
-  r.formErrors = await page.evaluate(() => ({
-    alerts: document.querySelectorAll('#contato [role="alert"]').length,
-    invalid: document.querySelectorAll('#contato [aria-invalid="true"]').length,
-    focused: document.activeElement?.getAttribute('name'),
-  }))
-  await page.fill('input[name="nome"]', 'Marina Teste')
-  await page.fill('input[name="email"]', 'marina@exemplo.example')
-  await page.getByText('Aclive', { exact: true }).click()
-  await page.fill('textarea[name="mensagem"]', 'Casa de 320 m² em terreno com aclive na Cantareira.')
-  await page.getByRole('button', { name: 'Enviar briefing' }).click()
-  await settle(page, 300)
-  r.formSending = await page.evaluate(() => document.querySelector('#contato button[type="submit"]')?.textContent)
-  await settle(page, 1600)
-  r.formSuccess = await page.evaluate(() => ({
-    heading: document.activeElement?.textContent,
-    status: !!document.querySelector('#contato [role="status"]'),
-  }))
-  await page.screenshot({ path: `${OUT}/form-success.png` })
-
-  // Acordeão FAQ.
-  await page.evaluate(() => document.getElementById('duvidas').scrollIntoView())
-  await settle(page, 600)
-  const q2 = page.getByRole('button', { name: /Vocês indicam/ })
+  const q2 = page.getByRole('button', { name: /reformar ou construir/ })
   await q2.click()
   await settle(page, 400)
   r.accordion = await q2.getAttribute('aria-expanded')
 
-  // Sócio: modal de trajetória.
-  await page.getByRole('button', { name: /Trajetória de Arq. Beatriz Leme/ }).click()
-  await settle(page, 400)
-  r.partnerModal = await page.evaluate(() => ({
-    title: document.querySelector('dialog[open] h2')?.textContent,
-    notice: document.querySelector('dialog[open] figcaption')?.textContent?.includes('ilustrativa'),
+  // Contato: erros e sucesso; pílula flutuante some.
+  await page.evaluate(() => document.getElementById('contato').scrollIntoView())
+  await settle(page, 1200)
+  r.floatingHiddenAtContact = await page.evaluate(
+    () => getComputedStyle(document.querySelector('.floating-cta')).opacity === '0',
+  )
+  await page.getByRole('button', { name: 'Enviar', exact: true }).click()
+  await settle(page, 300)
+  r.formErrors = await page.evaluate(() => ({
+    alerts: document.querySelectorAll('#contato [role="alert"]').length,
+    focused: document.activeElement?.getAttribute('name'),
   }))
-  await page.keyboard.press('Escape')
+  await page.fill('#contato input[name="nome"]', 'Marina Teste')
+  await page.fill('#contato input[name="email"]', 'marina@exemplo.example')
+  await page.selectOption('#contato select[name="tipo"]', 'reforma')
+  await page.fill('#contato textarea[name="mensagem"]', 'Reforma de casa de 450 m² no Jardim Europa, família de cinco.')
+  await page.getByRole('button', { name: 'Enviar', exact: true }).click()
+  await settle(page, 1700)
+  r.formSuccess = await page.evaluate(() => document.activeElement?.textContent)
+  await page.screenshot({ path: `${OUT}/contato-sucesso.png` })
 
-  // Travessia: próxima etapa avança a legenda.
-  const y = await sceneY(page, 'travessia', 0.05)
-  await page.evaluate((y) => window.scrollTo({ top: y, behavior: 'instant' }), y)
-  await settle(page, 1500)
-  await page.getByRole('button', { name: 'Próxima etapa' }).click()
-  await settle(page, 2400)
-  r.traverseStep = await page.evaluate(() => document.querySelector('#travessia [aria-current="step"]')?.textContent)
-
-  // Rodapé: minuta legal e créditos.
-  await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }))
+  // Rodapé: créditos.
+  await scrollTo(page, await page.evaluate(() => document.documentElement.scrollHeight))
   await settle(page, 800)
   await page.getByRole('button', { name: 'Créditos e Licenças' }).click()
   await settle(page, 300)
   r.credits = await page.evaluate(() => document.querySelectorAll('dialog[open] tbody tr').length)
-  await page.keyboard.press('Escape')
   report.interactions.desktop = r
   await context.close()
 }
 
-// 4) Menu móvel.
+// 4) Celular: menu e cortina por toque.
 {
   const context = await browser.newContext({
     viewport: { width: 390, height: 844 },
@@ -337,23 +377,23 @@ for (const mode of modes) {
     hasTouch: true,
   })
   const page = await context.newPage()
-  track(page, 'mobile-menu')
+  track(page, 'mobile')
   await page.goto(BASE, { waitUntil: 'networkidle' })
-  await settle(page, 2000)
+  await settle(page, 1800)
   await page.getByRole('button', { name: 'Abrir menu' }).click()
   await settle(page, 300)
   const opened = await page.evaluate(() => !!document.querySelector('#menu-movel[open]'))
   await page.screenshot({ path: `${OUT}/mobile-menu.png` })
   await page
     .getByRole('dialog', { name: 'Menu' })
-    .getByRole('link', { name: /Método/ })
+    .getByRole('link', { name: /Processo/ })
     .click()
   await settle(page, 2400)
-  const result = await page.evaluate(() => ({
+  const afterMenu = await page.evaluate(() => ({
     closed: !document.querySelector('#menu-movel[open]'),
-    metodoTop: Math.round(document.getElementById('metodo').getBoundingClientRect().top),
+    processoTop: Math.round(document.getElementById('processo').getBoundingClientRect().top),
   }))
-  report.interactions.mobileMenu = { opened, ...result }
+  report.interactions.mobile = { opened, ...afterMenu }
   await context.close()
 }
 

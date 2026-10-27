@@ -1,36 +1,34 @@
 import { ArrowUp } from '@phosphor-icons/react'
 import { brand, navLinks } from '../../data/content'
 import { companyPending, privacyPolicy, termsOfUse, type LegalDoc } from '../../data/legal'
-import { licenseNotes, mediaCredits } from '../../data/media'
+import { generated, licenseNotes, mediaCredits } from '../../data/media'
 import { scrollToY } from '../../lib/scroll'
 import { Dialog } from '../ui/Dialog'
 
 type LegalId = LegalDoc['id']
 
 const fontCredits = [
-  {
-    name: 'Big Shoulders Display',
-    license: 'SIL Open Font License 1.1',
-    url: 'https://fontsource.org/fonts/big-shoulders-display',
-  },
+  { name: 'Newsreader', license: 'SIL Open Font License 1.1', url: 'https://fontsource.org/fonts/newsreader' },
   { name: 'Hanken Grotesk', license: 'SIL Open Font License 1.1', url: 'https://fontsource.org/fonts/hanken-grotesk' },
   { name: 'IBM Plex Mono', license: 'SIL Open Font License 1.1', url: 'https://fontsource.org/fonts/ibm-plex-mono' },
   { name: 'Phosphor Icons', license: 'MIT', url: 'https://phosphoricons.com' },
 ]
 
+const linkClass = 'underline decoration-line underline-offset-4 hover:decoration-ink'
+
 export function Footer({ legal, onOpenLegal }: { legal: LegalId | null; onOpenLegal: (id: LegalId | null) => void }) {
   const doc = legal === 'privacidade' ? privacyPolicy : legal === 'termos' ? termsOfUse : null
 
   return (
-    <footer className="border-t border-line">
-      <div className="container-grid grid gap-10 py-14 md:grid-cols-12">
+    <footer className="border-t border-line bg-linen text-ink">
+      <div className="shell grid gap-12 py-16 md:grid-cols-12">
         <div className="md:col-span-5">
-          <p className="display text-3xl tracking-[0.04em]">{brand.name}</p>
-          <p className="mt-2 text-sm text-ash">{brand.tagline}</p>
-          <p className="mt-1 text-sm text-ash">
-            {brand.city} · {brand.scope}
+          <p className="serif text-4xl">{brand.name}</p>
+          <p className="meta mt-2 text-ink-2">{brand.descriptor}</p>
+          <p className="mt-6 max-w-[34ch] leading-relaxed text-ink-2">
+            Residências, apartamentos e interiores de alto padrão no {brand.place}.
           </p>
-          <p className="mono mt-6 text-xs leading-relaxed text-ash">
+          <p className="mono mt-6 text-xs leading-relaxed text-ink-2">
             {companyPending.legalName} · {companyPending.cnpj}
             <br />
             Marca e conteúdo demonstrativos. Dados da empresa pendentes antes da publicação.
@@ -38,25 +36,20 @@ export function Footer({ legal, onOpenLegal }: { legal: LegalId | null; onOpenLe
         </div>
 
         <nav aria-label="Rodapé" className="md:col-span-3">
-          <p className="label text-ash">Navegar</p>
+          <p className="meta text-ink-2">Navegar</p>
           <ul className="mt-3 grid grid-cols-2 gap-x-4 md:grid-cols-1">
-            {navLinks.map((l) => (
+            {[...navLinks, { id: 'contato', label: 'Contato' }].map((l) => (
               <li key={l.id}>
-                <a href={`#${l.id}`} className="inline-flex min-h-10 items-center text-sm hover:text-clay-ink">
+                <a href={`#${l.id}`} className="inline-flex min-h-10 items-center hover:text-clay-ink">
                   {l.label}
                 </a>
               </li>
             ))}
-            <li>
-              <a href="#contato" className="inline-flex min-h-10 items-center text-sm hover:text-clay-ink">
-                Contato
-              </a>
-            </li>
           </ul>
         </nav>
 
         <div className="md:col-span-4">
-          <p className="label text-ash">Informações legais</p>
+          <p className="meta text-ink-2">Informações legais</p>
           <ul className="mt-3">
             {(
               [
@@ -70,40 +63,37 @@ export function Footer({ legal, onOpenLegal }: { legal: LegalId | null; onOpenLe
                   type="button"
                   aria-haspopup="dialog"
                   onClick={() => onOpenLegal(id)}
-                  className="inline-flex min-h-10 items-center text-sm underline decoration-line-strong underline-offset-4 hover:decoration-clay"
+                  className={`inline-flex min-h-10 items-center ${linkClass}`}
                 >
                   {label}
                 </button>
               </li>
             ))}
           </ul>
-          <p className="mt-4 text-xs leading-relaxed text-ash">
-            Fotografias: studiopipin, Pietro Bolzonetti e retratos ilustrativos via Unsplash. Imagens-chave, vídeo de
-            ambiência e sequência da Travessia gerados para este projeto.
+          <p className="mt-4 text-xs leading-relaxed text-ink-2">
+            Fotografias de obras: imagens geradas para o projeto e fotos de studiopipin e Pietro Bolzonetti (Unsplash).
+            Retratos ilustrativos de banco (Unsplash). Croqui e amostras gerados a partir dessas imagens.
           </p>
         </div>
       </div>
 
       <div className="border-t border-line">
-        <div className="container-grid flex flex-col-reverse items-start justify-between gap-4 py-5 sm:flex-row sm:items-center">
-          <p className="mono text-xs text-ash">
-            © 2026 {brand.name} (demonstrativo) · {brand.coordinates}
-          </p>
+        <div className="shell flex flex-col-reverse items-start justify-between gap-4 py-5 pb-24 sm:flex-row sm:items-center md:pb-5">
+          <p className="mono text-xs text-ink-2">© 2026 {brand.full} (demonstrativo)</p>
           <button
             type="button"
             onClick={() => scrollToY(0)}
-            className="label inline-flex min-h-11 items-center gap-2 text-ash hover:text-limestone"
+            className="meta inline-flex min-h-11 items-center gap-2 text-ink-2 hover:text-ink"
           >
-            Voltar ao topo
-            <ArrowUp size={14} aria-hidden="true" />
+            Voltar ao topo <ArrowUp size={14} aria-hidden="true" />
           </button>
         </div>
       </div>
 
       <Dialog open={doc !== null} onClose={() => onOpenLegal(null)} eyebrow={doc?.updated} title={doc?.title ?? ''}>
         {doc && (
-          <div className="max-w-[68ch]">
-            <p className="mb-6 border border-line-strong bg-basalt p-4 text-sm leading-relaxed text-ash">
+          <div className="max-w-[66ch]">
+            <p className="mb-6 rounded-[8px] bg-sand p-4 text-sm leading-relaxed text-ink-2-deep">
               Minuta para revisão jurídica. Não é parecer jurídico nem texto definitivo. Itens entre colchetes são
               pendências que bloqueiam a publicação.
             </p>
@@ -111,7 +101,7 @@ export function Footer({ legal, onOpenLegal }: { legal: LegalId | null; onOpenLe
               <section key={s.heading} className="mb-6">
                 <h3 className="text-lg font-semibold">{s.heading}</h3>
                 {s.body.map((b) => (
-                  <p key={b} className="mt-2 leading-relaxed text-limestone/85">
+                  <p key={b} className="mt-2 leading-relaxed text-ink-2">
                     {b}
                   </p>
                 ))}
@@ -128,16 +118,16 @@ export function Footer({ legal, onOpenLegal }: { legal: LegalId | null; onOpenLe
         title="Créditos e Licenças"
       >
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[36rem] text-left text-sm">
+          <table className="w-full min-w-[34rem] text-left text-sm">
             <thead>
-              <tr className="border-b border-line-strong">
-                <th scope="col" className="label py-2 pr-4 font-normal text-ash">
+              <tr className="border-b border-ink/30">
+                <th scope="col" className="meta py-2 pr-4 font-normal text-ink-2">
                   Arquivo
                 </th>
-                <th scope="col" className="label py-2 pr-4 font-normal text-ash">
+                <th scope="col" className="meta py-2 pr-4 font-normal text-ink-2">
                   Crédito
                 </th>
-                <th scope="col" className="label py-2 font-normal text-ash">
+                <th scope="col" className="meta py-2 font-normal text-ink-2">
                   Licença
                 </th>
               </tr>
@@ -148,47 +138,39 @@ export function Footer({ legal, onOpenLegal }: { legal: LegalId | null; onOpenLe
                   <td className="mono py-2 pr-4 text-xs">{m.src.replace('/media/', '')}</td>
                   <td className="py-2 pr-4">
                     {m.sourcePage ? (
-                      <a
-                        href={m.sourcePage}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline decoration-line-strong underline-offset-4 hover:decoration-clay"
-                      >
+                      <a href={m.sourcePage} target="_blank" rel="noopener noreferrer" className={linkClass}>
                         {m.credit}
                       </a>
                     ) : (
                       m.credit
                     )}
                     {m.representativeStockImage && (
-                      <span className="mt-1 block text-xs text-ash">Retrato ilustrativo, não é membro da equipe.</span>
+                      <span className="mt-1 block text-xs text-ink-2">
+                        Retrato ilustrativo, não é membro da equipe.
+                      </span>
                     )}
                   </td>
                   <td className="py-2">
                     {m.licenseUrl ? (
-                      <a
-                        href={m.licenseUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline decoration-line-strong underline-offset-4 hover:decoration-clay"
-                      >
-                        {m.licenseUrl.includes('pexels') ? 'Licença Pexels' : 'Licença Unsplash'}
+                      <a href={m.licenseUrl} target="_blank" rel="noopener noreferrer" className={linkClass}>
+                        Licença Unsplash
                       </a>
                     ) : (
-                      <span className="text-ash">Gerada para o projeto</span>
+                      <span className="text-ink-2">Gerada para o projeto</span>
                     )}
                   </td>
                 </tr>
               ))}
+              <tr className="border-b border-line align-top">
+                <td className="mono py-2 pr-4 text-xs">generated/*.webp</td>
+                <td className="py-2 pr-4">{generated.croqui.credit}; amostras de material procedurais</td>
+                <td className="py-2 text-ink-2">Gerada para o projeto</td>
+              </tr>
               {fontCredits.map((f) => (
                 <tr key={f.name} className="border-b border-line">
                   <td className="mono py-2 pr-4 text-xs">{f.name}</td>
                   <td className="py-2 pr-4">
-                    <a
-                      href={f.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline decoration-line-strong underline-offset-4 hover:decoration-clay"
-                    >
+                    <a href={f.url} target="_blank" rel="noopener noreferrer" className={linkClass}>
                       {f.name}
                     </a>
                   </td>
@@ -198,7 +180,7 @@ export function Footer({ legal, onOpenLegal }: { legal: LegalId | null; onOpenLe
             </tbody>
           </table>
         </div>
-        <ul className="mt-6 space-y-2 text-xs leading-relaxed text-ash">
+        <ul className="mt-6 space-y-2 text-xs leading-relaxed text-ink-2">
           <li>{licenseNotes.unsplash}</li>
           <li>{licenseNotes.stockPeople}</li>
         </ul>

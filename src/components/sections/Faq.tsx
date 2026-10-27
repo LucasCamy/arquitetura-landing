@@ -3,6 +3,7 @@ import { Plus } from '@phosphor-icons/react'
 import { faqs } from '../../data/content'
 import { useBriefing } from '../../lib/briefing'
 import { NAV_HEIGHT, ScrollTrigger, useScene } from '../../lib/scroll'
+import { RichTitle } from '../ui/RichTitle'
 
 export function Faq() {
   const sectionRef = useRef<HTMLElement>(null)
@@ -10,9 +11,9 @@ export function Faq() {
   const asideRef = useRef<HTMLDivElement>(null)
   const [openSet, setOpenSet] = useState<Set<number>>(() => new Set([0]))
   const baseId = useId()
-  const { startBriefing } = useBriefing()
+  const { startProject } = useBriefing()
 
-  // Pin da coluna esquerda enquanto o acordeão rola (só desktop com movimento).
+  // Coluna esquerda fixa enquanto o acordeão rola (desktop com movimento).
   useScene(sectionRef, ({ desktop }) => {
     if (!desktop || !gridRef.current || !asideRef.current) return
     const aside = asideRef.current
@@ -27,9 +28,8 @@ export function Faq() {
     })
   })
 
-  // Altura muda ao abrir/fechar: recalcula depois da transição.
   useEffect(() => {
-    const id = window.setTimeout(() => ScrollTrigger.refresh(), 320)
+    const id = window.setTimeout(() => ScrollTrigger.refresh(), 360)
     return () => window.clearTimeout(id)
   }, [openSet])
 
@@ -42,24 +42,20 @@ export function Faq() {
     })
 
   return (
-    <section
-      id="duvidas"
-      ref={sectionRef}
-      aria-labelledby="duvidas-title"
-      className="border-t border-line py-24 md:py-32"
-    >
-      <div ref={gridRef} className="container-grid grid gap-12 lg:grid-cols-12 lg:gap-8">
+    <section id="perguntas" ref={sectionRef} aria-labelledby="perguntas-title" className="bg-linen py-28 md:py-40">
+      <div ref={gridRef} className="shell grid gap-12 lg:grid-cols-12 lg:gap-12">
         <div className="lg:col-span-5">
-          <div ref={asideRef} className="lg:pr-10">
-            <p className="label text-clay-ink">Dúvidas</p>
-            <h2 id="duvidas-title" className="h2 mt-4">
-              Perguntas Frequentes
-            </h2>
-            <p className="mt-6 max-w-[40ch] leading-relaxed text-limestone/90">
-              Prazos, obra, terreno e honorários. Se a sua dúvida não estiver aqui, ela é um bom começo de conversa.
+          <div ref={asideRef} className="lg:pr-6">
+            <p className="meta text-clay-ink">Perguntas frequentes</p>
+            <RichTitle id="perguntas-title" text="Antes da primeira *conversa*." className="t-section mt-4" />
+            <p className="mt-6 max-w-[38ch] leading-relaxed text-ink-2">
+              Metragem, reforma, construtoras e honorários. Se a sua dúvida não estiver aqui, ela é um bom começo.
             </p>
-            <button type="button" className="btn btn-secondary mt-8" onClick={() => startBriefing({})}>
-              Enviar minha pergunta
+            <button type="button" className="pill pill-outline mt-8" onClick={() => startProject()}>
+              Enviar minha pergunta{' '}
+              <span className="arrow" aria-hidden="true">
+                →
+              </span>
             </button>
           </div>
         </div>
@@ -78,15 +74,18 @@ export function Faq() {
                     aria-expanded={isOpen}
                     aria-controls={panelId}
                     onClick={() => toggle(i)}
-                    className="group flex min-h-16 w-full items-start gap-4 py-5 text-left md:gap-6"
+                    className="group flex min-h-16 w-full items-start gap-5 py-6 text-left"
                   >
-                    <span className="mono pt-1 text-sm text-ash">{String(i + 1).padStart(2, '0')}</span>
-                    <span className="flex-1 text-lg leading-snug font-semibold md:text-xl">{f.q}</span>
-                    <Plus
-                      size={20}
+                    <span className="meta pt-2 text-ink-2">{String(i + 1).padStart(2, '0')}</span>
+                    <span className="serif flex-1 text-[clamp(1.3rem,1.9vw,1.7rem)] leading-snug">{f.q}</span>
+                    <span
                       aria-hidden="true"
-                      className={`mt-1 shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-45 text-clay' : 'text-ash group-hover:text-limestone'}`}
-                    />
+                      className={`mt-1 grid size-9 shrink-0 place-items-center rounded-full border transition-[transform,background-color,color] duration-300 ${
+                        isOpen ? 'rotate-45 border-ink bg-ink text-linen' : 'border-line group-hover:border-ink'
+                      }`}
+                    >
+                      <Plus size={16} />
+                    </span>
                   </button>
                 </h3>
                 <div
@@ -96,11 +95,11 @@ export function Faq() {
                   inert={!isOpen}
                   className={`grid transition-[grid-template-rows] duration-300 ease-out ${isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
                 >
-                  <div className="flex gap-4 overflow-hidden md:gap-6">
-                    <span aria-hidden="true" className="mono invisible text-sm">
+                  <div className="flex gap-5 overflow-hidden">
+                    <span aria-hidden="true" className="meta invisible">
                       00
                     </span>
-                    <p className="max-w-[60ch] pb-6 leading-relaxed text-limestone/85">{f.a}</p>
+                    <p className="max-w-[58ch] pb-7 leading-relaxed text-ink-2">{f.a}</p>
                   </div>
                 </div>
               </li>

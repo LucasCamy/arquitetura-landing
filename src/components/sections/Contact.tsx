@@ -1,38 +1,26 @@
 import { useCallback, useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react'
-import { ArrowRight, CheckCircle, Copy, SpinnerGap, WarningCircle } from '@phosphor-icons/react'
-import { brand, briefingScopes, meetingOptions, terrainOptions, type MeetingFormat } from '../../data/content'
+import { CheckCircle, Copy, SpinnerGap, WarningCircle } from '@phosphor-icons/react'
+import { brand, projectTypes } from '../../data/content'
 import { media } from '../../data/media'
 import { useBriefing } from '../../lib/briefing'
 import { gsap, useScene } from '../../lib/scroll'
 import { MediaImage } from '../ui/MediaImage'
+import { RichTitle } from '../ui/RichTitle'
 
 type Fields = {
   nome: string
   email: string
   telefone: string
-  escopo: string
-  terreno: string
-  area: string
-  formato: MeetingFormat
+  tipo: string
+  metragem: string
+  local: string
   mensagem: string
 }
-
 type Errors = Partial<Record<keyof Fields, string>>
 
-const empty: Fields = {
-  nome: '',
-  email: '',
-  telefone: '',
-  escopo: '',
-  terreno: '',
-  area: '',
-  formato: 'presencial',
-  mensagem: '',
-}
-
-const withHelp = new Set<keyof Fields>(['telefone', 'area', 'mensagem'])
-
-const order: (keyof Fields)[] = ['nome', 'email', 'telefone', 'escopo', 'terreno', 'area', 'mensagem']
+const empty: Fields = { nome: '', email: '', telefone: '', tipo: '', metragem: '', local: '', mensagem: '' }
+const order: (keyof Fields)[] = ['nome', 'email', 'telefone', 'tipo', 'metragem', 'local', 'mensagem']
+const withHelp = new Set<keyof Fields>(['telefone', 'metragem', 'local', 'mensagem'])
 
 function validate(f: Fields): Errors {
   const e: Errors = {}
@@ -40,17 +28,16 @@ function validate(f: Fields): Errors {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.email.trim()))
     e.email = 'Informe um e-mail válido, como nome@dominio.com.'
   if (f.telefone && f.telefone.replace(/\D/g, '').length < 10) e.telefone = 'Use DDD e número, ou deixe em branco.'
-  if (!f.escopo) e.escopo = 'Escolha uma tipologia ou "Ainda não sei".'
-  if (!f.terreno) e.terreno = 'Escolha a situação do terreno.'
-  if (f.area && (!/^\d+([.,]\d+)?$/.test(f.area.trim()) || Number(f.area.replace(',', '.')) <= 0))
-    e.area = 'Use apenas números, por exemplo 320.'
+  if (!f.tipo) e.tipo = 'Escolha o tipo de projeto ou "Ainda não sei".'
+  if (f.metragem && (!/^\d+([.,]\d+)?$/.test(f.metragem.trim()) || Number(f.metragem.replace(',', '.')) <= 0))
+    e.metragem = 'Use apenas números, por exemplo 450.'
   if (f.mensagem.trim().length < 20) e.mensagem = 'Conte um pouco mais (mínimo de 20 caracteres).'
   return e
 }
 
 type Status = 'idle' | 'sending' | 'sent'
 
-export function Contact({ onOpenPrivacy }: { onOpenPrivacy: () => void }) {
+export function Contact({ onOpenPrivacy, onVisible }: { onOpenPrivacy: () => void; onVisible: (v: boolean) => void }) {
   const sectionRef = useRef<HTMLElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
   const id = useId()
@@ -61,20 +48,42 @@ export function Contact({ onOpenPrivacy }: { onOpenPrivacy: () => void }) {
   const [copied, setCopied] = useState(false)
   const { preset } = useBriefing()
 
-  // Tipologia ou formato escolhidos em outra seção chegam pré-selecionados.
+  // Pedidos vindos de outras seções chegam pré-preenchidos.
   useEffect(() => {
     if (preset.version === 0) return
     setStatus('idle')
-    setFields((f) => ({
-      ...f,
-      escopo: preset.scope ?? f.escopo,
-      formato: preset.meeting ?? f.formato,
-    }))
+    setFields((f) => ({ ...f, tipo: preset.projectType ?? f.tipo, mensagem: preset.message ?? f.mensagem }))
     const t = window.setTimeout(() => {
       formRef.current?.querySelector<HTMLInputElement>('input[name="nome"]')?.focus({ preventScroll: true })
     }, 1300)
     return () => window.clearTimeout(t)
   }, [preset])
+
+  // A pílula flutuante some quando o formulário já está à vista.
+  useEffect(() => {
+    const el = sectionRef.current
+    if (!el) return
+    const io = new IntersectionObserver(([entry]) => onVisible(!!entry?.isIntersecting), { threshold: 0.15 })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [onVisible])
+
+  useScene(sectionRef, () => {
+    const q = gsap.utils.selector(sectionRef)
+    gsap.from(q('[data-word]'), {
+      yPercent: 110,
+      duration: 0.9,
+      ease: 'power3.out',
+      stagger: 0.06,
+      scrollTrigger: { trigger: q('h2')[0], start: 'top 85%', once: true },
+    })
+    const frame = q('[data-reveal]')[0]
+    if (!frame) return
+    gsap
+      .timeline({ scrollTrigger: { trigger: frame, start: 'top 95%', end: 'bottom 75%', scrub: 1 } })
+      .fromTo(frame, { clipPath: 'inset(100% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', ease: 'none' }, 0)
+      .fromTo(q('[data-reveal] img'), { scale: 1.12 }, { scale: 1, ease: 'none' }, 0)
+  })
 
   const set = <K extends keyof Fields>(key: K, value: Fields[K]) => {
     const next = { ...fields, [key]: value }
@@ -89,8 +98,7 @@ export function Contact({ onOpenPrivacy }: { onOpenPrivacy: () => void }) {
     setErrors(found)
     const first = order.find((k) => found[k])
     if (first) {
-      const target = formRef.current?.querySelector<HTMLElement>(`[name="${first}"]`)
-      target?.focus()
+      formRef.current?.querySelector<HTMLElement>(`[name="${first}"]`)?.focus()
       return
     }
     setStatus('sending')
@@ -110,24 +118,6 @@ export function Contact({ onOpenPrivacy }: { onOpenPrivacy: () => void }) {
     }
   }
 
-  useScene(sectionRef, () => {
-    const q = gsap.utils.selector(sectionRef)
-    gsap.from(q('[data-word]'), {
-      yPercent: 105,
-      duration: 0.9,
-      ease: 'power3.out',
-      stagger: 0.1,
-      scrollTrigger: { trigger: q('h2')[0], start: 'top 85%', once: true },
-    })
-    // Clip-path: o ateliê noturno se revela como um vão.
-    const frame = q('[data-reveal]')[0]
-    if (!frame) return
-    gsap
-      .timeline({ scrollTrigger: { trigger: frame, start: 'top 95%', end: 'bottom 80%', scrub: 1 } })
-      .fromTo(frame, { clipPath: 'inset(100% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', ease: 'none' }, 0)
-      .fromTo(q('[data-reveal] img'), { scale: 1.12 }, { scale: 1, ease: 'none' }, 0)
-  })
-
   const fieldProps = (key: keyof Fields) => ({
     id: `${id}-${key}`,
     name: key,
@@ -138,55 +128,55 @@ export function Contact({ onOpenPrivacy }: { onOpenPrivacy: () => void }) {
   })
 
   return (
-    <section
-      id="contato"
-      ref={sectionRef}
-      aria-labelledby="contato-title"
-      className="border-t border-line pt-24 pb-16 md:pt-32"
-    >
-      <div className="container-grid">
-        <h2 id="contato-title" className="monumental">
-          <span className="mask">
-            <span data-word>Vamos</span>
-          </span>{' '}
-          <span className="mask">
-            <span data-word>Conversar</span>
-          </span>
-        </h2>
+    <section id="contato" ref={sectionRef} aria-labelledby="contato-title" className="bg-linen pt-28 pb-20 md:pt-40">
+      <div className="shell">
+        <div className="max-w-[52rem]">
+          <p className="meta text-clay-ink">Vamos conversar</p>
+          <RichTitle id="contato-title" text="Conte como a sua família *vive*." className="t-section mt-4" />
+          <p className="mt-6 max-w-[48ch] leading-relaxed text-ink-2">
+            A primeira conversa é sem custo, no estúdio do Jardim Europa ou por vídeo. Respondemos em até dois dias
+            úteis.
+          </p>
+        </div>
 
-        <div className="mt-12 grid gap-12 lg:mt-16 lg:grid-cols-12 lg:gap-8">
-          <figure className="lg:sticky lg:top-24 lg:col-span-5 lg:self-start">
-            <div data-reveal className="relative aspect-[16/10] overflow-hidden bg-stone">
-              <MediaImage asset={media.contact} sizes="(min-width: 1024px) 40vw, 100vw" />
-            </div>
-            <figcaption className="mt-3 flex justify-between gap-4 border-t border-line pt-3 text-sm text-ash">
-              <span>O ateliê à noite, com as maquetes da semana</span>
-              <span className="mono shrink-0 text-xs">{brand.coordinates}</span>
-            </figcaption>
-          </figure>
-
-          <div className="lg:col-span-7 lg:pl-8">
-            <dl className="grid gap-px border border-line bg-line sm:grid-cols-2">
-              <InfoBlock title="Endereço">
-                Pinheiros, São Paulo · SP
-                <span className="mt-1 block text-xs text-ash">Endereço completo enviado na confirmação da visita.</span>
-              </InfoBlock>
-              <InfoBlock title="Horário">
-                Seg. a sex., 9h às 18h
-                <span className="mt-1 block text-xs text-ash">Visitas ao ateliê com hora marcada.</span>
-              </InfoBlock>
-              <InfoBlock title="Contato" wide>
-                <span className="flex flex-wrap items-center gap-x-5">
+        <div className="mt-14 grid gap-12 lg:grid-cols-12 lg:gap-12">
+          <div className="lg:col-span-5">
+            <figure>
+              <div data-reveal className="aspect-[16/10] overflow-hidden rounded-[2px] lg:aspect-[4/5]">
+                <MediaImage asset={media.contact} sizes="(min-width: 1024px) 40vw, 100vw" />
+              </div>
+              <figcaption className="meta mt-4 text-ink-2">O estúdio à noite, com as maquetes da semana</figcaption>
+            </figure>
+            <dl className="mt-10 grid gap-6 sm:grid-cols-2">
+              <div>
+                <dt className="meta text-ink-2">Endereço</dt>
+                <dd className="mt-2 leading-snug">
+                  Jardim Europa, São Paulo · SP
+                  <span className="mt-1 block text-sm text-ink-2">
+                    Endereço completo enviado na confirmação da visita.
+                  </span>
+                </dd>
+              </div>
+              <div>
+                <dt className="meta text-ink-2">Horário</dt>
+                <dd className="mt-2 leading-snug">
+                  Seg. a sex., 9h às 18h
+                  <span className="mt-1 block text-sm text-ink-2">Visitas ao estúdio com hora marcada.</span>
+                </dd>
+              </div>
+              <div className="sm:col-span-2">
+                <dt className="meta text-ink-2">Contato</dt>
+                <dd className="mt-2 flex flex-wrap items-center gap-x-5">
                   <a
                     href={`mailto:${brand.email}`}
-                    className="break-words underline decoration-line-strong underline-offset-4 hover:decoration-clay"
+                    className="underline decoration-line underline-offset-4 hover:decoration-ink"
                   >
                     {brand.email}
                   </a>
                   <button
                     type="button"
                     onClick={copyEmail}
-                    className="label inline-flex min-h-11 items-center gap-2 text-ash hover:text-limestone"
+                    className="meta inline-flex min-h-11 items-center gap-2 text-ink-2 hover:text-ink"
                   >
                     {copied ? (
                       <CheckCircle size={14} className="text-ok" aria-hidden="true" />
@@ -195,28 +185,29 @@ export function Contact({ onOpenPrivacy }: { onOpenPrivacy: () => void }) {
                     )}
                     {copied ? 'E-mail copiado' : 'Copiar e-mail'}
                   </button>
-                </span>
-                <span className="sr-only" aria-live="polite">
-                  {copied ? 'E-mail copiado para a área de transferência.' : ''}
-                </span>
-              </InfoBlock>
+                  <span className="sr-only" aria-live="polite">
+                    {copied ? 'E-mail copiado para a área de transferência.' : ''}
+                  </span>
+                </dd>
+              </div>
             </dl>
+          </div>
 
-            <div className="mt-10 border border-line bg-stone p-5 md:p-8">
+          <div className="lg:col-span-7">
+            <div className="rounded-[2px] bg-sand p-6 md:p-10">
               {status === 'sent' ? (
-                <div className="py-6" role="status">
-                  <CheckCircle size={40} weight="light" className="text-ok" aria-hidden="true" />
-                  <h3 ref={successRef} tabIndex={-1} className="display mt-4 text-4xl leading-none outline-none">
-                    Briefing recebido
+                <div role="status" className="py-6">
+                  <CheckCircle size={44} weight="light" className="text-ok" aria-hidden="true" />
+                  <h3 ref={successRef} tabIndex={-1} className="serif mt-4 text-4xl outline-none">
+                    Recebemos o seu <em>projeto</em>.
                   </h3>
-                  <p className="mt-4 max-w-[52ch] leading-relaxed text-limestone/90">
-                    Obrigado, {fields.nome.split(' ')[0]}. Em uma demonstração real, um dos sócios responderia em até 2
-                    dias úteis para marcar a conversa {fields.formato === 'video' ? 'por vídeo' : 'no ateliê'}.
+                  <p className="mt-4 max-w-[50ch] leading-relaxed text-ink-2-deep">
+                    Obrigada, {fields.nome.split(' ')[0]}. Em uma operação real, Cecília responderia em até dois dias
+                    úteis para marcar a primeira conversa. Envio simulado: nenhum dado saiu do seu navegador.
                   </p>
-                  <p className="mt-3 text-sm text-ash">Envio simulado: nenhum dado saiu do seu navegador.</p>
                   <button
                     type="button"
-                    className="btn btn-secondary mt-6"
+                    className="pill pill-outline mt-8"
                     onClick={() => {
                       setFields(empty)
                       setErrors({})
@@ -224,24 +215,18 @@ export function Contact({ onOpenPrivacy }: { onOpenPrivacy: () => void }) {
                       setStatus('idle')
                     }}
                   >
-                    Enviar outro briefing
+                    Enviar outra mensagem
                   </button>
                 </div>
               ) : (
-                <form ref={formRef} noValidate onSubmit={onSubmit} aria-labelledby={`${id}-form-title`}>
-                  <h3 id={`${id}-form-title`} className="display text-3xl leading-none">
-                    Briefing inicial
+                <form ref={formRef} noValidate onSubmit={onSubmit} aria-labelledby={`${id}-title`}>
+                  <h3 id={`${id}-title`} className="serif text-3xl">
+                    Começar um <em>projeto</em>
                   </h3>
-                  <p className="mt-2 text-sm text-ash">Campos com * são obrigatórios. Leva cerca de 2 minutos.</p>
+                  <p className="mt-2 text-sm text-ink-2-deep">Campos com * são obrigatórios.</p>
 
                   <div className="mt-8 grid gap-6 md:grid-cols-2">
-                    <Field
-                      label="Nome *"
-                      htmlFor={`${id}-nome`}
-                      error={errors.nome}
-                      errId={`${id}-nome-err`}
-                      helpId={`${id}-nome-help`}
-                    >
+                    <Field label="Nome *" htmlFor={`${id}-nome`} error={errors.nome} errId={`${id}-nome-err`}>
                       <input
                         {...fieldProps('nome')}
                         className="field"
@@ -250,13 +235,7 @@ export function Contact({ onOpenPrivacy }: { onOpenPrivacy: () => void }) {
                         onChange={(e) => set('nome', e.target.value)}
                       />
                     </Field>
-                    <Field
-                      label="E-mail *"
-                      htmlFor={`${id}-email`}
-                      error={errors.email}
-                      errId={`${id}-email-err`}
-                      helpId={`${id}-email-help`}
-                    >
+                    <Field label="E-mail *" htmlFor={`${id}-email`} error={errors.email} errId={`${id}-email-err`}>
                       <input
                         {...fieldProps('email')}
                         type="email"
@@ -270,10 +249,10 @@ export function Contact({ onOpenPrivacy }: { onOpenPrivacy: () => void }) {
                     <Field
                       label="Telefone"
                       htmlFor={`${id}-telefone`}
-                      help="Opcional. Só se preferir uma ligação."
+                      help="Opcional, se preferir uma ligação."
+                      helpId={`${id}-telefone-help`}
                       error={errors.telefone}
                       errId={`${id}-telefone-err`}
-                      helpId={`${id}-telefone-help`}
                     >
                       <input
                         {...fieldProps('telefone')}
@@ -286,102 +265,74 @@ export function Contact({ onOpenPrivacy }: { onOpenPrivacy: () => void }) {
                       />
                     </Field>
                     <Field
-                      label="Tipologia *"
-                      htmlFor={`${id}-escopo`}
-                      error={errors.escopo}
-                      errId={`${id}-escopo-err`}
-                      helpId={`${id}-escopo-help`}
+                      label="Tipo de projeto *"
+                      htmlFor={`${id}-tipo`}
+                      error={errors.tipo}
+                      errId={`${id}-tipo-err`}
                     >
                       <select
-                        {...fieldProps('escopo')}
+                        {...fieldProps('tipo')}
                         className="field"
-                        value={fields.escopo}
-                        onChange={(e) => set('escopo', e.target.value)}
+                        value={fields.tipo}
+                        onChange={(e) => set('tipo', e.target.value)}
                       >
                         <option value="" disabled>
                           Selecione
                         </option>
-                        {briefingScopes.map((s) => (
-                          <option key={s.value} value={s.value}>
-                            {s.label}
+                        {projectTypes.map((t) => (
+                          <option key={t.value} value={t.value}>
+                            {t.label}
                           </option>
                         ))}
                       </select>
                     </Field>
-                  </div>
-
-                  <fieldset
-                    className="mt-6"
-                    aria-invalid={errors.terreno ? true : undefined}
-                    aria-describedby={errors.terreno ? `${id}-terreno-err` : undefined}
-                  >
-                    <legend className="text-sm font-semibold">Situação do terreno *</legend>
-                    <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                      {terrainOptions.map((o) => (
-                        <Choice
-                          key={o.value}
-                          name="terreno"
-                          value={o.value}
-                          label={o.label}
-                          checked={fields.terreno === o.value}
-                          invalid={!!errors.terreno}
-                          onChange={() => set('terreno', o.value)}
-                        />
-                      ))}
-                    </div>
-                    {errors.terreno && <ErrorText id={`${id}-terreno-err`}>{errors.terreno}</ErrorText>}
-                  </fieldset>
-
-                  <div className="mt-6 grid gap-6 md:grid-cols-2">
                     <Field
-                      label="Área estimada"
-                      htmlFor={`${id}-area`}
+                      label="Metragem aproximada"
+                      htmlFor={`${id}-metragem`}
                       help="Opcional, em m²."
-                      error={errors.area}
-                      errId={`${id}-area-err`}
-                      helpId={`${id}-area-help`}
+                      helpId={`${id}-metragem-help`}
+                      error={errors.metragem}
+                      errId={`${id}-metragem-err`}
                     >
                       <div className="relative">
                         <input
-                          {...fieldProps('area')}
+                          {...fieldProps('metragem')}
                           inputMode="decimal"
                           className="field pr-12"
-                          value={fields.area}
-                          onChange={(e) => set('area', e.target.value)}
+                          value={fields.metragem}
+                          onChange={(e) => set('metragem', e.target.value)}
                         />
                         <span
                           aria-hidden="true"
-                          className="mono pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-sm text-ash"
+                          className="mono pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-sm text-ink-2-deep"
                         >
                           m²
                         </span>
                       </div>
                     </Field>
-                    <fieldset>
-                      <legend className="text-sm font-semibold">Primeira conversa</legend>
-                      <div className="mt-2 grid grid-cols-2 gap-2">
-                        {meetingOptions.map((o) => (
-                          <Choice
-                            key={o.value}
-                            name="formato"
-                            value={o.value}
-                            label={o.label}
-                            checked={fields.formato === o.value}
-                            onChange={() => set('formato', o.value)}
-                          />
-                        ))}
-                      </div>
-                    </fieldset>
+                    <Field
+                      label="Local da obra"
+                      htmlFor={`${id}-local`}
+                      help="Opcional: bairro ou cidade."
+                      helpId={`${id}-local-help`}
+                    >
+                      <input
+                        {...fieldProps('local')}
+                        className="field"
+                        autoComplete="address-level2"
+                        value={fields.local}
+                        onChange={(e) => set('local', e.target.value)}
+                      />
+                    </Field>
                   </div>
-
                   <div className="mt-6">
                     <Field
-                      label="Conte sobre o projeto *"
+                      label="Conte sobre a casa *"
                       htmlFor={`${id}-mensagem`}
-                      help="Programa, prazo desejado, referências. Mínimo de 20 caracteres."
+                      help="Quem mora, o que precisa mudar, prazos. Mínimo de 20 caracteres."
+                      helpId={`${id}-mensagem-help`}
                       error={errors.mensagem}
                       errId={`${id}-mensagem-err`}
-                      helpId={`${id}-mensagem-help`}
                     >
                       <textarea
                         {...fieldProps('mensagem')}
@@ -393,33 +344,30 @@ export function Contact({ onOpenPrivacy }: { onOpenPrivacy: () => void }) {
                     </Field>
                   </div>
 
-                  <div className="mt-8 flex flex-col gap-4 border-t border-line pt-6 md:flex-row md:items-center md:justify-between">
-                    <p className="max-w-[46ch] text-xs leading-relaxed text-ash">
+                  <div className="mt-8 flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+                    <p className="max-w-[44ch] text-xs leading-relaxed text-ink-2-deep">
                       Usamos estes dados só para responder ao seu pedido. Veja a{' '}
-                      <button
-                        type="button"
-                        onClick={onOpenPrivacy}
-                        className="text-limestone underline underline-offset-2 hover:decoration-clay"
-                      >
+                      <button type="button" onClick={onOpenPrivacy} className="text-ink underline underline-offset-2">
                         Política de Privacidade
                       </button>
                       . Demonstração: o envio é simulado e nada sai do navegador.
                     </p>
                     <button
                       type="submit"
-                      className="btn btn-primary min-w-[13rem]"
+                      className="pill pill-dark min-w-[13rem]"
                       disabled={status === 'sending'}
                       aria-busy={status === 'sending'}
                     >
                       {status === 'sending' ? (
                         <>
-                          <SpinnerGap size={18} className="spin" aria-hidden="true" />
-                          Enviando
+                          <SpinnerGap size={18} className="spin" aria-hidden="true" /> Enviando
                         </>
                       ) : (
                         <>
-                          Enviar briefing
-                          <ArrowRight size={18} weight="bold" aria-hidden="true" />
+                          Enviar{' '}
+                          <span className="arrow" aria-hidden="true">
+                            →
+                          </span>
                         </>
                       )}
                     </button>
@@ -434,22 +382,13 @@ export function Contact({ onOpenPrivacy }: { onOpenPrivacy: () => void }) {
   )
 }
 
-function InfoBlock({ title, children, wide }: { title: string; children: ReactNode; wide?: boolean }) {
-  return (
-    <div className={`bg-basalt p-5 ${wide ? 'sm:col-span-2' : ''}`}>
-      <dt className="label text-ash">{title}</dt>
-      <dd className="mt-2 text-[0.95rem] leading-snug">{children}</dd>
-    </div>
-  )
-}
-
 function Field(props: {
   label: string
   htmlFor: string
   help?: string
+  helpId?: string
   error?: string
-  errId: string
-  helpId: string
+  errId?: string
   children: ReactNode
 }) {
   return (
@@ -459,51 +398,16 @@ function Field(props: {
       </label>
       <div className="mt-2">{props.children}</div>
       {props.help && (
-        <p id={props.helpId} className="mt-1.5 text-xs text-ash">
+        <p id={props.helpId} className="mt-1.5 text-xs text-ink-2-deep">
           {props.help}
         </p>
       )}
-      {props.error && <ErrorText id={props.errId}>{props.error}</ErrorText>}
+      {props.error && (
+        <p id={props.errId} role="alert" className="mt-1.5 flex items-start gap-1.5 text-sm text-error">
+          <WarningCircle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
+          {props.error}
+        </p>
+      )}
     </div>
-  )
-}
-
-function ErrorText({ id, children }: { id: string; children: ReactNode }) {
-  return (
-    <p id={id} role="alert" className="mt-1.5 flex items-start gap-1.5 text-sm text-error">
-      <WarningCircle size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
-      {children}
-    </p>
-  )
-}
-
-function Choice(props: {
-  name: string
-  value: string
-  label: string
-  checked: boolean
-  invalid?: boolean
-  onChange: () => void
-}) {
-  return (
-    <label
-      className={`relative flex min-h-12 cursor-pointer items-center justify-center rounded-[var(--radius-control)] border px-3 py-2 text-center text-sm transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-clay ${
-        props.checked
-          ? 'border-limestone bg-limestone font-semibold text-basalt'
-          : props.invalid
-            ? 'border-error text-limestone'
-            : 'border-line-strong text-limestone hover:border-ash'
-      }`}
-    >
-      <input
-        type="radio"
-        name={props.name}
-        value={props.value}
-        checked={props.checked}
-        onChange={props.onChange}
-        className="sr-only"
-      />
-      {props.label}
-    </label>
   )
 }

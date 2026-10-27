@@ -1,157 +1,142 @@
-# DESIGN.md — Atelier Vértice
+# DESIGN.md — Moura Arquitetura e Interiores
 
-Direção: **Tectonic Monolith & Blueprint Hairline Grid**. A página se comporta como uma prancha técnica escura: massa monolítica (fotografia e tipografia monumental) apoiada numa grade estrutural aparente de 1 px, com cotas, níveis e áreas em mono.
+Arquétipo **ARQ-B: Editorial Orgânico & Tátil** (*Warm Linen & Contrast Gallery*). A página se comporta como uma revista de arquitetura impressa em papel de linho: serifada leve com palavras-chave em itálico, fotografia generosa, muito respiro, materiais que se pode quase tocar. O único capítulo escuro é a galeria de obras, para que as casas iluminadas saltem.
 
 ## Missão visual
 
-Fazer o visitante sentir o peso do concreto e a precisão do desenho antes de ler qualquer argumento. Cada cena de scroll é uma passagem de capítulo, como percorrer uma obra: abertura (vão), estrutura (cotas), travessia (aproximação da casa), método (etapas), pessoas, dúvidas, conversa.
+Fazer uma família sentir, antes de qualquer argumento, que esta arquiteta entende como uma casa envelhece e como a luz entra nela. A narrativa vai do sonho (fotografia em tela cheia) ao método (croqui, materiais, etapas) e termina numa conversa.
 
 ## Personalidade e público
 
-- Silenciosa, precisa, material. Nunca festiva.
-- Público: famílias e incorporadores boutique em São Paulo que contratam arquitetura autoral (alto envolvimento, leitura lenta, decisões de 12 a 36 meses). Também curadores e gestores culturais (pavilhões).
+- Calma, autoral, precisa sem ser técnica demais. Nunca corporativa.
+- Público: famílias de alta renda em São Paulo construindo ou reformando a casa principal (decisão longa, emocional, com cônjuges e às vezes construtora envolvidos); compradores de apartamentos para interiores completos.
 
 ## Princípios
 
-1. **Estrutura aparente**: a grade de 1 px é visível e organiza tudo; nada flutua sem eixo.
-2. **Dado como cota**: todo número tem unidade (m², anos, +0.00m) e aparece em mono tabular.
-3. **Um acento**: argila/terracota marca apenas o que é ação ou leitura ativa.
-4. **Movimento como passagem**: o scroll abre vãos, desenha cotas e avança quadros; nunca enfeita.
-5. **Recompor, não encolher**: no celular os trilhos viram listas e o hero vira fotografia de fundo.
+1. **Papel e fotografia primeiro.** Fundo de linho, imagem grande, texto em coluna estreita.
+2. **Itálico como ênfase única.** Cada título tem uma palavra-chave em itálico; nada de negrito em títulos.
+3. **Tátil.** Amostras de material, croqui a lápis e papel creme dão textura ao digital.
+4. **Um capítulo escuro.** Só a galeria de obras muda para carvão.
+5. **Movimento contemplativo.** Scroll suave, transições longas, nada que pisque.
 
-## Paleta (tokens em `src/styles/tokens.css`)
+## Paleta (`src/styles/tokens.css`)
 
 | Token | Hex | Uso |
 |---|---|---|
-| `--basalt` | `#0C0C0B` | fundo da página (pedra vulcânica) |
-| `--stone` | `#141412` | superfícies (concreto) |
-| `--stone-2` | `#1B1B18` | superfície elevada (diálogos, campos) |
-| `--line` | `rgba(239,236,230,0.12)` | grade estrutural / bordas 1 px |
-| `--line-strong` | `rgba(239,236,230,0.28)` | cotas ativas, borda de campo |
-| `--limestone` | `#EFECE6` | texto principal (calcário) |
-| `--ash` | `#9A968E` | texto secundário |
-| `--clay` | `#C65D3B` | acento único: botões primários, marcador da régua, foco |
-| `--clay-ink` | `#D9774F` | acento em texto pequeno sobre `stone` (mesma matiz, mais claro) |
-| `--ok` | `#9CC3A0` | estado de sucesso (sempre com ícone de check + texto) |
-| `--error` | `#E58A72` | estado de erro (sempre com ícone de aviso + texto) |
+| `--linen` | `#F2EFE9` | fundo principal (linho/travertino) |
+| `--sand` | `#E8E2D7` | superfície secundária (cards, faixa técnica, campos) |
+| `--ink` | `#1C1B18` | texto principal, botões pílula |
+| `--ink-2` | `#6E6960` | texto secundário sobre linho |
+| `--ink-2-deep` | `#5C574F` | texto secundário sobre areia |
+| `--clay` | `#B85D3B` | acento: itálicos grandes, fios, pontos, marcador da régua |
+| `--clay-ink` | `#9A4A2C` | acento em texto pequeno sobre claro |
+| `--night` | `#191815` | fundo exclusivo do capítulo Projetos |
+| `--night-2` | `#A39E94` | texto secundário no escuro |
+| `--clay-glow` | `#D98A69` | acento em texto pequeno no escuro |
+| `--line` | `rgba(28,27,24,0.14)` | fios sobre claro |
+| `--line-night` | `rgba(242,239,233,0.16)` | fios sobre escuro |
+| `--ok` / `--error` | `#3F6B4A` / `#A3392B` | estados (sempre com ícone + texto) |
 
-### Contraste calculado (WCAG 2.x, luminância relativa)
+### Contraste calculado (WCAG 2.x)
 
-| Texto | Fundo | Razão | Resultado |
+| Texto | Fundo | Razão | Uso permitido |
 |---|---|---|---|
-| limestone | basalt | 16,5:1 | AAA |
-| limestone | stone | 15,6:1 | AAA |
-| ash | basalt | 6,6:1 | AA |
-| ash | stone | 6,3:1 | AA |
-| ash | stone-2 | 5,8:1 | AA |
-| clay | basalt | 4,7:1 | AA (texto normal) |
-| clay | stone | 4,4:1 | só texto grande/ícones → usar `clay-ink` |
-| clay-ink | stone | 5,9:1 | AA |
-| basalt sobre clay (botão) | clay | 4,7:1 | AA |
-| error | stone-2 | 6,6:1 | AA |
-| ok | stone-2 | 8,7:1 | AAA |
-| limestone sobre foto com scrim (hero móvel) | scrim basalt 0→88 % | ≥ 7:1 na área do texto | AA |
+| ink | linen | 15,1:1 | qualquer |
+| ink | sand | 13,4:1 | qualquer |
+| ink-2 | linen | 4,7:1 | texto normal |
+| ink-2 | sand | 4,2:1 | **não usar** → `ink-2-deep` (5,6:1) |
+| clay | linen | 3,9:1 | só texto grande (≥ 24 px) e elementos gráficos |
+| clay-ink | linen / sand | 5,4:1 / 4,8:1 | texto pequeno |
+| linen | night | 15,5:1 | qualquer |
+| night-2 | night | 6,6:1 | texto normal |
+| clay-glow | night | 6,5:1 | texto pequeno |
+| linen | ink (pílula) | 15,1:1 | botões |
+| ok / error | linen | 6,1:1 / 6,4:1 | mensagens |
+| linen sobre foto | scrim ink 0→70 % | ≥ 7:1 na área do texto | hero |
 
 ## Tipografia
 
-- **Display**: Big Shoulders Display Variable (OFL). Condensada, monumental, desenho de placa e concreto; permite `MATÉRIA & LUZ` em duas linhas no celular. Acentos (É, Ã, Ç, Õ) conferidos em 800 no navegador.
-- **Texto**: Hanken Grotesk Variable (OFL), geométrica limpa.
-- **Dados**: IBM Plex Mono 400/500 (OFL) com `font-variant-numeric: tabular-nums` para cotas, m², coordenadas e CAU.
+- **Display**: Newsreader Variable (OFL), 300/400, eixo óptico; itálico real para palavras-chave. Acentos (é, ã, ç, õ) conferidos em 300 e 300 itálico no navegador.
+- **Texto**: Hanken Grotesk Variable (OFL).
+- **Dados**: IBM Plex Mono 400/500 (OFL), `tabular-nums`, caixa alta com tracking para fichas (`620 M²`, `2024`) e régua.
 
-Escala fluida:
-
-| Papel | Tamanho | Linha / tracking |
+| Papel | Tamanho | Linha |
 |---|---|---|
-| Monumental (h1, VAMOS CONVERSAR) | `clamp(4.25rem, 15vw, 15rem)` | 0.82 / -0.01em, caixa alta |
-| h2 | `clamp(2.4rem, 6vw, 5.5rem)` | 0.9 / 0 |
-| h3 | `clamp(1.35rem, 2vw, 1.75rem)` | 1.1 |
-| Corpo | `1rem → 1.125rem` | 1.6 |
-| Mono label | `0.75rem` | 1.4 / 0.08em, caixa alta |
+| Hero | `clamp(2.6rem, 6.4vw, 6.25rem)`, peso 300 | 1.02 |
+| Título de seção | `clamp(2.1rem, 4.6vw, 4.25rem)`, peso 300 | 1.05 |
+| Manifesto | `clamp(1.7rem, 3vw, 2.9rem)`, peso 300 | 1.18 |
+| Corpo | `1rem → 1.0625rem` | 1.65 |
+| Meta (mono) | `0.72rem`, tracking 0.12em | 1.4 |
 
-## Espaçamento, raios e elevação
+## Espaçamento, raios, sombras
 
-- Base 4 px. Seções `py-24 → py-40`. Gutter 16 px (móvel), 32 px (≥ 768), 48 px (≥ 1280). Grade de 12 colunas em desktop.
-- Raios (arquitetura é ortogonal): **0** em painéis e mídia, **2 px** em badges, **4 px** em botões e campos, **6 px** em diálogos. Nada acima disso.
-- Sombras: tingidas de basalto `0 24px 60px -20px rgba(12,12,11,.9)` só em diálogos. Sem brilho, exceto anel de foco.
+- Base 4 px; seções `py-28 → py-44`. Gutter 20 px (móvel), 40 px (≥ 768), 64 px (≥ 1280) e 96 px à esquerda no desktop para a régua.
+- Raios: **pílula** (999 px) em botões e selos; **2 px** em fotografias e amostras (canto quase vivo, papel cortado); **14 px** em diálogos; **8 px** em campos.
+- Sombras: só em diálogos e no selo "Arraste", tingidas de `ink` (`0 30px 60px -30px rgba(28,27,24,.45)`).
 
-## Superfícies e componentes
+## Componentes
 
-- **Grade hairline**: containers com `gap-px` sobre `bg-line` produzem divisórias de 1 px sem bordas duplicadas.
-- **Botões**: primário (fundo clay, texto basalt, 48 px), secundário (borda line-strong, texto limestone), terciário (texto + seta, sublinhado de 1 px). Loading mantém largura.
-- **Cards**: sem fundo arredondado; número de prancha em mono, título em display, ficha em mono.
-- **Badges**: mono 11 px em borda de 1 px, raio 2.
-- **Navegação**: barra fixa 64 px, fundo basalt 92 % com borda inferior line; link ativo com traço clay de 1 px e `aria-current`.
-- **Régua de cota (progresso)**: coluna fixa à direita no desktop com ticks a cada 2 m (+0.00m → +24.00m), marcador clay e leitura numérica; no celular, linha de 2 px no topo + nível no canto.
+- **Botão pílula**: fundo `ink`, texto `linen`, 48 px, seta `→` que avança 4 px no hover. Variante contorno (borda `ink`) e variante clara no escuro.
+- **Fotografia emoldurada**: borda de papel (padding 10 px `sand`) e legenda mono abaixo.
+- **Ficha técnica**: mono caixa alta separada por `·`.
+- **Régua lateral** (NAV-2): fio vertical fixo à esquerda com preenchimento contínuo e rótulo vertical `02 / 06 PROJETOS`.
+- **Selo "Arraste"**: círculo de 96 px que segue o ponteiro sobre o trilho.
 
-## Elemento-assinatura
+## Elementos-assinatura
 
-A **Travessia Espacial**: 120 quadros (conjunto v2, aproximação contínua sobre a residência brutalista gerada para o projeto) desenhados num `<canvas>` conforme o scroll, em AVIF com fallback WebP, com quatro legendas de projeto. Representa o método do estúdio (percorrer o espaço antes de desenhá-lo). Pôster: quadro 1 desenhado assim que carrega; fallback reduzido: grade com 4 fotografias distintas (residência, escada em balanço, pavilhão, interior) e legendas, porque os quadros v2 variam pouco entre si.
+1. **Hero que encolhe para o Manifesto** (HERO-2): a foto em tela cheia se recorta (`clip-path`) até a moldura da coluna direita enquanto o texto do manifesto entra.
+2. **Cortina Croqui ↔ Obra** (SIGN-1): croqui a lápis gerado a partir da própria fotografia (mesmas dimensões, alinhamento pixel a pixel) sobre papel creme, com cotas e anotações.
+3. **Mesa de materiais** (SIGN-2): seis amostras geradas em canvas trocam a fotografia aplicada.
+4. **A luz na matéria** (SIGN-3): 120 quadros em `<canvas>`.
 
-## Motion (tokens)
+## Motion
 
-- `--ease-out: cubic-bezier(0.22,1,0.36,1)`, `--ease-in-out: cubic-bezier(0.65,0,0.35,1)`; GSAP usa `power3.out` / `power2.inOut` equivalentes.
-- Durações: 120 / 180 / 280 / 560 / 900 ms.
-- Lenis `lerp 0.085`. Scrub `1` em todas as cenas encadeadas.
-- Técnicas e motivo:
+- Tokens: `--ease-out: cubic-bezier(0.22,1,0.36,1)`, `--ease-in-out: cubic-bezier(0.65,0,0.35,1)`; durações 180 / 320 / 600 / 900 ms. Lenis `lerp 0.085`; scrub `1`.
 
-| Técnica | Onde | O que comunica |
+| Técnica | Onde | Comunica |
 |---|---|---|
-| Smooth scroll | página | peso, ritmo de visita a uma obra |
-| Progresso | régua de cota + escala/opacidade do hero | em que nível do "edifício" o leitor está |
-| Trigger | contadores, cotas 1 px, nav ativa | medição acontecendo ao chegar |
-| Scrub | máscaras, etapas, canvas | o leitor controla o tempo e pode voltar |
-| Pin | hero, travessia, método, coluna de dúvidas | capítulo que exige atenção |
-| Timeline | hero (máscara → vão → cotas → m² → legenda/CTA), travessia, método | sequência construtiva |
-| Clip-path | editorial e contato | vão que se abre na parede |
-| Parallax | obras | profundidade entre fotografia, número e ficha |
-| Canvas | travessia | percorrer o espaço |
-| Stagger | pilares, palavras de títulos, sócios | elementos de uma mesma estrutura chegando em ordem |
+| Smooth scroll | página | leitura contemplativa |
+| Progresso | régua lateral + barra `01 / 05` da galeria | onde estou na história |
+| Trigger | troca de tema ao entrar em Projetos, etapa ativa do Processo, contadores | mudança de capítulo |
+| Scrub | encolhimento do hero, trilho de obras, varredura da cortina, quadros | o leitor controla o tempo |
+| Pin | manifesto, galeria, coluna de materiais, luz na matéria, coluna do processo, coluna das perguntas | atenção num capítulo |
+| Timeline | foto encolhe → título do manifesto sobe → parágrafos → métricas | sequência editorial |
+| Clip-path | hero → moldura, cortina croqui, foto do contato | revelar/comparar |
+| Parallax | fotos dentro dos cards do trilho | profundidade ao deslizar |
+| Canvas | luz na matéria | percorrer o espaço |
+| Stagger | palavras dos títulos, métricas, amostras | elementos da mesma família |
 
-- Movimento reduzido: sem Lenis, pin, scrub ou autoplay de vídeo; tudo visível no estado final; trilho do método vira lista; canvas vira grade. `?movimento=1` força as animações (classe `motion-forced` no `<html>`), `?movimento=0` força a versão estática.
+Movimento reduzido: sem Lenis, pin ou scrub; hero estático seguido do manifesto; galeria empilhada; cortina parada em 50 % (arraste e teclado continuam); quadros viram uma imagem com as 4 legendas. `?movimento=1` força as animações; `?movimento=0` força a versão estática.
 
 ## Estados
 
-- Hover: imagens de sócios saem do P&B para cor (filter, 560 ms); links ganham sublinhado clay.
-- Focus: anel `2px solid clay` + offset 3 px em tudo (`:focus-visible`).
-- Active/selecionado: filtros com `aria-pressed` e fundo limestone/texto basalt.
-- Loading: botão de envio com spinner e texto "Enviando", mesma largura.
-- Erro: mensagem abaixo do campo com ícone de aviso, `role="alert"`, borda error.
-- Sucesso: painel com ícone de check, foco movido para o título.
-- Vazio: não ocorre nos filtros (todas as tipologias têm itens); contador "Exibindo N de 6 frentes" em `aria-live`.
+Hover (seta avança, foto escala 1.03, amostra levanta 2 px), foco (anel 2 px `clay-ink` com offset 3 px; no escuro `clay-glow`), selecionado (`aria-pressed`, contorno `ink`), loading (spinner na pílula, mesma largura), erro (ícone + texto `error`, `role="alert"`), sucesso (ícone + foco no título).
 
 ## Responsividade
 
 | Largura | Recomposição |
 |---|---|
-| 375–767 | hero com foto de fundo e scrim; pilares 2×2; obras em pilha (imagem → cards); método vertical; FAQ sem pin; régua vira linha no topo |
-| 768–1023 | pilares 4 colunas; obras com imagem ao lado de 2 cards; método vertical |
-| ≥ 1024 | hero split 7/5; método horizontal fixado; coluna da FAQ fixada; régua lateral |
-| ≥ 1440 | container máx. 1440 px, grade aparente continua até as bordas |
+| < 768 | régua vira barra no topo; manifesto: foto encolhe para o topo, parágrafos e métricas depois do pin; galeria empilhada; materiais em lista com foto acima; processo sem coluna fixa |
+| 768–1023 | igual ao móvel com duas colunas nas métricas e amostras |
+| ≥ 1024 | régua lateral, trilho horizontal fixado, colunas fixas em materiais, processo e perguntas |
+| ≥ 1440 | container 1360 px; fotos maiores |
 
 ## Acessibilidade
 
-Um `h1`, skip link, landmarks, foco visível, diálogos nativos `<dialog>` com foco devolvido e Esc, menu móvel modal, acordeão WAI-ARIA (`aria-expanded`, `aria-controls`, regiões), filtros `aria-pressed`, legendas da travessia em `aria-live="polite"`, canvas `aria-hidden` com descrição `sr-only`, contadores com valor final para leitor de tela, alvos ≥ 44 px, vídeo de ambiência com botão de pausa.
+Um `h1`; skip link; foco visível; diálogos `<dialog>` modais; cortina com `role="slider"`, `aria-valuenow` e setas/Home/End; materiais com `aria-pressed` e legenda `aria-live`; acordeão WAI-ARIA; canvas `aria-hidden` com descrição; trilho com botões anterior/próximo além do arraste; alvos ≥ 44 px.
 
 ## Conformidade (resumo de `conformidade-legal.md`)
 
-- Dados coletados: formulário de briefing (nome, e-mail, telefone opcional, tipologia, terreno, área, formato, mensagem). Envio simulado localmente. Base provável: procedimentos preliminares a pedido do titular (confirmar com advogado); aviso curto junto ao botão, sem caixa obrigatória.
-- Sem rastreadores, sem cookies próprios, fontes self-hosted, nenhum embed de terceiros: em princípio não há banner de cookies (confirmar).
-- Retratos de sócios são stock ilustrativo (`representativeStockImage`): aviso visível nos cards e no modal.
-- Ambiência do hero e sequência da Travessia usam as versões v2, geradas para o projeto (sem pessoas nem marcas). Os vídeos v1 do Pexels continuam em `public/media/` mas não são usados pela página.
-- Razão social, CNPJ e endereço completo: **pendentes visíveis** no rodapé. Minutas de privacidade e termos marcadas como minuta para revisão jurídica.
+- Formulários: contato (nome, e-mail, telefone opcional, tipo de projeto, metragem, local da obra, mensagem) e pedido de portfólio (nome, e-mail, tipo). Envio simulado. Base provável: procedimentos preliminares a pedido do titular; aviso junto ao botão, sem caixa obrigatória (confirmar com advogado).
+- Sem rastreadores, cookies próprios ou embeds; fontes self-hosted: em princípio sem banner (confirmar).
+- Retratos: stock ilustrativo, aviso visível. Pessoas, obras, números e CAU demonstrativos.
+- Sequência de quadros: conjunto v2 gerado para o projeto (o v1 do Pexels mostra pessoas identificáveis e uma marca).
+- Razão social, CNPJ e endereço completo: pendentes visíveis. Minutas marcadas como tal.
 
-## Do's
+## Do's e don'ts
 
-- Alinhar tudo à grade de 12 colunas e às linhas de 1 px.
-- Mono para todo número; unidade sempre.
-- Fotografia grande, sem molduras arredondadas.
-
-## Don'ts
-
-- Gradientes decorativos, blobs, glow, sombras pretas.
-- Segundo acento colorido.
-- Travessão longo em texto visível, "Seção 01", "role para baixo".
-- Expandir conteúdo no hover deslocando layout.
+- Faça: uma palavra em itálico por título; respiro; fichas em mono; fotos com cantos quase vivos.
+- Não faça: grade de fios de 1 px por toda a página (isso é ARQ-A); mais de um acento; sombras pretas; travessão longo em texto visível; gradientes decorativos (só scrim).
 
 ## Checklist final
 
@@ -160,5 +145,6 @@ Um `h1`, skip link, landmarks, foco visível, diálogos nativos `<dialog>` com f
 - [x] Todas as âncoras existem
 - [x] Versão reduzida entrega todo o conteúdo
 - [x] Diálogos pausam Lenis e devolvem foco
-- [x] Formulário: erro, loading, sucesso
+- [x] Cortina operável por arraste e teclado
+- [x] Formulários: erro, loading, sucesso
 - [x] Pendências legais visíveis e listadas

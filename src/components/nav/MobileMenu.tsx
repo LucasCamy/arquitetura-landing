@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react'
 import { X } from '@phosphor-icons/react'
-import { brand, navLinks, type ChapterId } from '../../data/content'
+import { brand, navLinks } from '../../data/content'
 import { lockScroll, scrollToId, unlockScroll } from '../../lib/scroll'
 
-/** Menu móvel em <dialog> modal, renderizado fora do header (evita bloco de contenção do fixed). */
-export function MobileMenu({ open, onClose, active }: { open: boolean; onClose: () => void; active: ChapterId }) {
+/** Menu móvel em <dialog> modal, renderizado fora do header. */
+export function MobileMenu({ open, onClose, active }: { open: boolean; onClose: () => void; active: string }) {
   const ref = useRef<HTMLDialogElement>(null)
   const onCloseRef = useRef(onClose)
   onCloseRef.current = onClose
@@ -39,23 +39,23 @@ export function MobileMenu({ open, onClose, active }: { open: boolean; onClose: 
       id="menu-movel"
       aria-label="Menu"
       data-lenis-prevent
-      className="m-0 h-dvh max-h-none w-full max-w-none bg-basalt p-0 text-limestone backdrop:bg-basalt"
+      className="m-0 h-dvh max-h-none w-full max-w-none bg-linen p-0 text-ink backdrop:bg-linen"
     >
       {open && (
         <div className="flex h-full flex-col">
-          <div className="container-grid flex h-16 shrink-0 items-center justify-between border-b border-line">
-            <span className="display text-xl tracking-[0.04em]">{brand.name}</span>
+          <div className="shell flex h-[72px] shrink-0 items-center justify-between border-b border-line">
+            <span className="serif text-[1.65rem] leading-none">{brand.name}</span>
             <button
               type="button"
               onClick={onClose}
               aria-label="Fechar menu"
-              className="grid size-11 place-items-center rounded-[var(--radius-control)] border border-line-strong"
+              className="grid size-11 place-items-center rounded-full border border-current"
             >
-              <X size={22} weight="light" />
+              <X size={20} />
             </button>
           </div>
-          <nav aria-label="Menu móvel" className="container-grid flex-1 overflow-y-auto py-6">
-            <ul className="border-t border-line">
+          <nav aria-label="Menu móvel" className="shell flex-1 overflow-y-auto py-6">
+            <ul>
               {navLinks.map((link, i) => (
                 <li key={link.id} className="border-b border-line">
                   <a
@@ -67,8 +67,8 @@ export function MobileMenu({ open, onClose, active }: { open: boolean; onClose: 
                     }}
                     className="flex min-h-16 items-baseline gap-4 py-3"
                   >
-                    <span className="label text-ash">{String(i + 1).padStart(2, '0')}</span>
-                    <span className={`display text-4xl ${active === link.id ? 'text-clay-ink' : ''}`}>
+                    <span className="meta text-ink-2">{String(i + 1).padStart(2, '0')}</span>
+                    <span className={`serif text-4xl ${active === link.id ? 'italic text-clay' : ''}`}>
                       {link.label}
                     </span>
                   </a>
@@ -76,16 +76,19 @@ export function MobileMenu({ open, onClose, active }: { open: boolean; onClose: 
               ))}
             </ul>
           </nav>
-          <div className="container-grid shrink-0 border-t border-line py-4">
+          <div className="shell shrink-0 border-t border-line py-4">
             <a
               href="#contato"
               onClick={(event) => {
                 event.preventDefault()
                 go('contato')
               }}
-              className="btn btn-primary w-full"
+              className="pill pill-dark w-full"
             >
-              Fale Conosco
+              Começar um projeto{' '}
+              <span className="arrow" aria-hidden="true">
+                →
+              </span>
             </a>
           </div>
         </div>

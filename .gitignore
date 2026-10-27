@@ -4,5 +4,4 @@ dist
 .validation
 .validation-*.log
 .vite
-_arquivo
 img

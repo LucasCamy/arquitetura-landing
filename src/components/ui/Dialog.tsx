@@ -5,18 +5,30 @@ import { lockScroll, unlockScroll } from '../../lib/scroll'
 type DialogProps = {
   open: boolean
   onClose: () => void
-  title: string
+  title: ReactNode
+  /** Texto do título para leitores de tela quando `title` tem marcação. */
   eyebrow?: string
   children: ReactNode
-  size?: 'md' | 'lg'
   footer?: ReactNode
+  /** `drawer` abre como gaveta lateral à direita (pedido de portfólio). */
+  variant?: 'center' | 'drawer'
+  size?: 'md' | 'lg'
 }
 
 /**
- * Diálogo modal nativo: foco preso pelo navegador, Esc fecha, clique no fundo fecha,
+ * Diálogo modal nativo: foco preso pelo navegador, Esc e clique no fundo fecham,
  * pausa o Lenis e devolve o foco a quem abriu.
  */
-export function Dialog({ open, onClose, title, eyebrow, children, size = 'lg', footer }: DialogProps) {
+export function Dialog({
+  open,
+  onClose,
+  title,
+  eyebrow,
+  children,
+  footer,
+  variant = 'center',
+  size = 'lg',
+}: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null)
   const titleId = useId()
   const onCloseRef = useRef(onClose)
@@ -41,6 +53,11 @@ export function Dialog({ open, onClose, title, eyebrow, children, size = 'lg', f
     }
   }, [open])
 
+  const shape =
+    variant === 'drawer'
+      ? 'ml-auto mr-0 my-0 h-dvh max-h-dvh w-full max-w-[34rem] rounded-none'
+      : `m-auto max-h-[calc(100dvh-32px)] w-[calc(100%-32px)] rounded-[14px] ${size === 'lg' ? 'max-w-3xl' : 'max-w-xl'}`
+
   return (
     <dialog
       ref={ref}
@@ -49,16 +66,14 @@ export function Dialog({ open, onClose, title, eyebrow, children, size = 'lg', f
       onClick={(event) => {
         if (event.target === event.currentTarget) onClose()
       }}
-      className={`m-auto max-h-[calc(100dvh-32px)] w-[calc(100%-32px)] overflow-hidden rounded-[var(--radius-dialog)] border border-line-strong bg-stone-2 p-0 text-limestone shadow-dialog backdrop:backdrop-blur-[2px] ${
-        size === 'lg' ? 'max-w-4xl' : 'max-w-xl'
-      }`}
+      className={`overflow-hidden bg-linen p-0 text-ink shadow-soft ${shape}`}
     >
       {open && (
-        <div className="flex max-h-[calc(100dvh-32px)] flex-col">
-          <header className="flex items-start justify-between gap-4 border-b border-line px-5 py-4 md:px-8 md:py-5">
+        <div className={`flex flex-col ${variant === 'drawer' ? 'h-dvh' : 'max-h-[calc(100dvh-32px)]'}`}>
+          <header className="flex items-start justify-between gap-4 border-b border-line px-6 py-5 md:px-9">
             <div className="min-w-0">
-              {eyebrow && <p className="label text-ash">{eyebrow}</p>}
-              <h2 id={titleId} className="display mt-1 text-[clamp(1.6rem,3.4vw,2.6rem)] leading-[0.95]">
+              {eyebrow && <p className="meta text-ink-2">{eyebrow}</p>}
+              <h2 id={titleId} className="serif mt-2 text-[clamp(1.7rem,3.2vw,2.4rem)] leading-[1.08]">
                 {title}
               </h2>
             </div>
@@ -66,13 +81,13 @@ export function Dialog({ open, onClose, title, eyebrow, children, size = 'lg', f
               type="button"
               onClick={onClose}
               aria-label="Fechar"
-              className="-mr-2 grid size-11 shrink-0 place-items-center rounded-[var(--radius-control)] text-ash transition-colors hover:text-limestone"
+              className="-mr-2 grid size-11 shrink-0 place-items-center rounded-full transition-colors hover:bg-sand"
             >
-              <X size={22} weight="light" />
+              <X size={20} />
             </button>
           </header>
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-6 md:px-8 md:py-8">{children}</div>
-          {footer && <footer className="border-t border-line px-5 py-4 md:px-8">{footer}</footer>}
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-7 md:px-9">{children}</div>
+          {footer && <footer className="border-t border-line px-6 py-4 md:px-9">{footer}</footer>}
         </div>
       )}
     </dialog>

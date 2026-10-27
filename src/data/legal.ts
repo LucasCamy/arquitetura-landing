@@ -24,16 +24,16 @@ export const privacyPolicy: LegalDoc = {
     {
       heading: 'Quem trata os dados',
       body: [
-        `${companyPending.legalName}, ${companyPending.cnpj}, ${companyPending.address}. Marca demonstrativa: Atelier Vértice.`,
+        `${companyPending.legalName}, ${companyPending.cnpj}, ${companyPending.address}. Marca demonstrativa: Moura Arquitetura e Interiores.`,
         `Contato do encarregado: ${companyPending.dpo}.`,
       ],
     },
     {
       heading: 'Quais dados e para quê',
       body: [
-        'Formulário de briefing: nome, e-mail, telefone (opcional), tipologia, situação do terreno, área estimada (opcional), formato preferido da conversa e mensagem.',
-        'Finalidade: responder ao seu pedido de conversa e preparar uma proposta de projeto.',
-        'Base legal provável: procedimentos preliminares relacionados a contrato, a pedido do titular. A confirmar com o advogado.',
+        'Formulário "Começar um projeto": nome, e-mail, telefone (opcional), tipo de projeto, metragem aproximada (opcional), local da obra (opcional) e mensagem.',
+        'Pedido de portfólio: nome, e-mail e tipo de projeto de interesse.',
+        'Finalidade: responder ao seu pedido e preparar uma proposta. Base legal provável: procedimentos preliminares relacionados a contrato, a pedido do titular. A confirmar com o advogado.',
       ],
     },
     {
@@ -50,7 +50,7 @@ export const privacyPolicy: LegalDoc = {
     {
       heading: 'Seus direitos',
       body: [
-        'Confirmação, acesso, correção, anonimização, eliminação, portabilidade e informação sobre compartilhamento, conforme a Lei 13.709/2018 (LGPD). Pedidos pelo e-mail contato@ateliervertice.example.',
+        'Confirmação, acesso, correção, anonimização, eliminação, portabilidade e informação sobre compartilhamento, conforme a Lei 13.709/2018 (LGPD). Pedidos pelo e-mail contato@mouraarquitetura.example.',
       ],
     },
     {
@@ -70,18 +70,18 @@ export const termsOfUse: LegalDoc = {
     {
       heading: 'Natureza do site',
       body: [
-        'Site institucional demonstrativo. Obras, números, prêmios, nomes de sócios e registros CAU exibidos são fictícios e servem para apresentar o layout.',
+        'Site institucional demonstrativo. Obras, números, pessoas e registros profissionais exibidos são fictícios e servem para apresentar o layout.',
       ],
     },
     {
       heading: 'Conteúdo e imagens',
       body: [
-        'Imagens geradas para o projeto e fotografias de bancos de imagem com licença própria (ver Créditos). Os retratos de sócios são fotografias ilustrativas de banco de imagem e não representam pessoas da equipe.',
+        'Imagens geradas para o projeto, croqui e amostras de material gerados a partir delas, e fotografias de banco de imagem com licença própria (ver Créditos). Os retratos são fotografias ilustrativas de banco de imagem e não representam pessoas da equipe.',
       ],
     },
     {
       heading: 'Sem proposta vinculante',
-      body: ['Prazos e faixas de área indicados são referências gerais e não constituem proposta comercial.'],
+      body: ['Prazos, metragens e faixas indicados são referências gerais e não constituem proposta comercial.'],
     },
   ],
 }

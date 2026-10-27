@@ -1,83 +1,66 @@
-# IMPLEMENTATION_PLAN.md
+# IMPLEMENTATION_PLAN.md — Moura (ARQ-B)
 
 ## Arquitetura da página
 
-Página única (SPA estática, sem roteador). `App` monta, em ordem do documento:
-
-| # | id | Componente | Família de layout | Interação real | Cena de scroll |
+| # | id | Componente | Forma (catálogo) | Interação real | Cena de scroll |
 |---|---|---|---|---|---|
-| 0 | — | `Navbar` + `MobileMenu` + `ScrollRuler` | barra fixa | links com seção ativa, menu modal | progresso, trigger (nav ativa) |
-| 1 | `inicio` | `Hero` | split monumental 7/5 + grade 1 px de 4 pilares | pilares abrem diálogo de detalhe construtivo; pausa do vídeo | pin, timeline, progresso (escala/opacidade), stagger |
-| 2 | `estudio` | `Studio` | faixa de métricas + split assimétrico editorial | — (conteúdo) | trigger (contadores, cotas), clip-path |
-| 3 | `obras` | `Works` | xadrez imagem × fichas | filtro por tipologia, Prancha Técnica (diálogo) com corte SVG e "Iniciar estudo" | parallax |
-| 4 | `travessia` | `Traverse` | cena de tela cheia | etapa anterior/próxima | pin, scrub, timeline, canvas |
-| 5 | `metodo` | `Method` | trilho horizontal | barra de primeiro passo (presencial / vídeo) | pin + scrub horizontal |
-| 6 | `socios` | `Partners` | trio de retratos | hover/foco revela especialidade; modal Trajetória | stagger |
-| 7 | `duvidas` | `Faq` | coluna fixa + acordeão | acordeão WAI-ARIA | pin da coluna |
-| 8 | `contato` | `Contact` + `Footer` | título monumental + foto + formulário | formulário com validação e estados; modais legais | clip-path |
+| 0 | — | `Navbar`, `MobileMenu`, `ChapterRuler`, `FloatingCta` | NAV-2 | links, menu modal, pílula flutuante | progresso, tema por capítulo |
+| 1 | `manifesto` | `HeroManifesto` | HERO-2 | CTAs | pin + scrub + timeline + stagger + contadores |
+| 2 | `projetos` | `Projects` | PORT-2 | arraste, anterior/próximo, gaveta "Pedir portfólio" com formulário | pin + scrub horizontal + parallax + tema escuro |
+| 3 | `croqui` | `Croqui` | SIGN-1 | cortina arrastável/teclado | clip-path + scrub |
+| 4 | `materiais` | `Materials` | SIGN-2 | amostras com hover/foco/clique | pin da coluna + stagger + gatilho por amostra |
+| 4b | `luz` | `LightSequence` | SIGN-3 | anterior/próxima legenda | pin + scrub + canvas + timeline |
+| 5 | `processo` | `Process` | METH-2 | botão de agendamento | pin da coluna + foco de opacidade |
+| 6 | `estudio` | `Studio` | TEAM-2 | — | stagger |
+| 6b | `perguntas` | `Faq` | coluna fixa + acordeão | acordeão | pin da coluna |
+| 6c | `contato` | `Contact`, `Footer` | CTA com formulário | formulário, modais legais | clip-path |
 
-## Árvore e pastas
+## Pastas
 
 ```
 src/
-  main.tsx                 fontes, estilos, render
-  App.tsx                  BriefingProvider, Lenis, ScrollTrigger.sort/refresh, cotas globais
-  styles/tokens.css        tokens + @theme inline
-  styles/globals.css       base, grade, utilitários, reduced motion
-  data/MEDIA_MANIFEST.json manifesto original
-  data/media.ts            mídias tipadas + objectPosition
-  data/content.ts          conteúdo demonstrativo
-  data/legal.ts            minutas e créditos
-  lib/scroll.ts            registro GSAP, Lenis, motion hooks, trava de scroll, scrollToId
-  lib/briefing.ts          contexto do briefing (tipologia + formato pré-selecionados)
-  components/ui/           Dialog, MediaImage, SplitWords, SectionDiagram, PillarDiagram, Icon helpers
-  components/nav/          Navbar, MobileMenu, ScrollRuler
-  components/sections/     Hero, Studio, Works, Traverse, Method, Partners, Faq, Contact, Footer
-scripts/validate.mjs       Playwright
+  App.tsx, main.tsx
+  styles/tokens.css, globals.css
+  data/MEDIA_MANIFEST.json, media.ts, content.ts, legal.ts
+  lib/scroll.ts, briefing.tsx, theme.ts
+  components/ui/      Dialog, MediaImage, RichTitle, Pill
+  components/nav/     Navbar, MobileMenu, ChapterRuler, FloatingCta
+  components/sections HeroManifesto, Projects, PortfolioDialog, Croqui, Materials, LightSequence, Process, Studio, Faq, Contact, Footer
+scripts/gerar-midia.mjs, scripts/validate.mjs
 ```
 
 ## Dependências
 
-Runtime: react, react-dom, gsap, @gsap/react, lenis, @phosphor-icons/react, 3 pacotes Fontsource. Dev: vite, @vitejs/plugin-react, typescript, tailwindcss, @tailwindcss/vite, @types/react(-dom), playwright. Sem Motion (os estados de UI cabem em CSS), sem Three.js (canvas 2D basta), sem libs de gráfico.
+Mantidas: react, react-dom, gsap, @gsap/react, lenis, @phosphor-icons/react, Hanken Grotesk, IBM Plex Mono. Trocada: Big Shoulders Display → Newsreader (serifada com itálico real). Sem novas libs de imagem: croqui e amostras são gerados em `<canvas>` via Playwright, que já era dependência de desenvolvimento.
 
 ## Ordem de implementação
 
-1. Scaffold, configs, cópia de mídia, manifesto.
-2. Tokens, globals, fontes.
-3. `media.ts`, `content.ts`, `legal.ts`.
-4. `scroll.ts` (Lenis + matchMedia + trava), `Dialog`, `MediaImage`, `SplitWords`.
-5. Navbar, menu móvel, régua.
-6. Hero (estático primeiro, depois timeline e pin).
-7. Travessia (pôster/grade estática primeiro, depois canvas).
-8. Studio, Works, Method, Partners, Faq, Contact, Footer.
-9. Ordenação de gatilhos e refresh; validação.
+1. Mídia derivada (croqui alinhado, 6 amostras) e documentos.
+2. Tokens, globals, fontes; `scroll.ts` reaproveitado; `theme.ts`.
+3. Dados (`media.ts` com recortes por material, `content.ts`, `legal.ts`).
+4. Primitivos e navegação (régua lateral, pílula flutuante).
+5. Hero → Manifesto (estático primeiro, depois pin/clip).
+6. Projetos (pilha estática primeiro, depois trilho, arraste, selo).
+7. Croqui, Materiais, Luz, Processo, Estúdio, Perguntas, Contato, Rodapé.
+8. Ordenação de gatilhos, validação, revisão.
 
-## Responsividade
+## Estratégias
 
-Mobile-first com Tailwind; troca de layout por `useCanAnimate()` + breakpoints em `gsap.matchMedia()` (`desktop: (min-width: 1024px)`). Pins de trilho horizontal só ≥ 1024. Hero pinado em todas as larguras (cabe em `100dvh`); FAQ pinada só ≥ 1024.
-
-## Fallback do elemento-assinatura
-
-1. Antes do pré-carregamento: canvas desenha o quadro 1 assim que ele chega (carregado primeiro).
-2. Pré-carregamento de 120 quadros v2 começa em `top 250%`, uma vez: AVIF (≈ 4,3 MB) quando o quadro 1 decodifica, senão WebP (≈ 8,7 MB).
-3. Quadro pedido indisponível → desenha o carregado mais próximo anterior; redesenha quando chega.
-4. Movimento reduzido → grade com 4 fotografias distintas e as 4 legendas, sem canvas.
-5. Canvas `aria-hidden` + descrição `sr-only`; legenda ativa em `aria-live`; botões anterior/próxima rolam até a etapa.
+- **Hero → Manifesto**: a foto fica em camada absoluta no palco fixado; o `clip-path: inset()` anima do quadro inteiro até o retângulo medido de um marcador na coluna direita (funções com `invalidateOnRefresh`), e a imagem interna desescala de 1.12 para 1. Movimento reduzido: hero e manifesto em fluxo normal.
+- **Trilho**: `x: () => -(scrollWidth - innerWidth)`; parallax interno com `containerAnimation`; arraste converte delta horizontal em scroll vertical (1:1); botões rolam até o card; selo segue o ponteiro com `gsap.quickTo`, oculto em ponteiro grosso.
+- **Cortina**: `--pos` em CSS, croqui por cima com `clip-path: inset(0 calc(100% - var(--pos)) 0 0)`; varredura 25 → 55 % por scrub até a primeira interação do usuário.
+- **Quadros**: AVIF com fallback WebP, pré-carregamento em `top 250%`, DPR ≤ 2.
+- **Tema**: `ScrollTrigger` em Projetos alterna `data-theme="night"` no `<html>`; fundo do `body` faz transição de 600 ms; com movimento reduzido a seção tem fundo próprio.
 
 ## Performance
 
-- Hero com `fetchpriority="high"` e preload; demais imagens `loading="lazy"` + `decoding="async"` com `aspect-ratio` reservado.
-- Vídeo de ambiência `preload="metadata"`, só toca com movimento permitido e em viewport.
-- Canvas: DPR ≤ 2, redesenho só quando o quadro muda, ResizeObserver.
-- Valores contínuos em objetos GSAP/refs, nunca em estado React por quadro.
+Hero com preload e `fetchpriority="high"`; demais imagens `lazy`; 120 quadros AVIF ≈ 4,2 MB só perto da cena; nenhum valor por quadro em estado React.
 
 ## Testes
 
-- `npm run typecheck`, `npm run build`.
-- `scripts/validate.mjs`: 7 larguras × overflow + âncoras; desktop/celular × `no-preference`/`reduce`; `?movimento=1` com reduce; screenshots por cena; erros de console; diálogo pausa Lenis; filtro; acordeão; formulário (erro → sucesso).
+`typecheck`, `build`, `validate:browser`: 7 larguras (375–1920) com overflow e âncoras; desktop/celular × `no-preference`/`reduce` + `?movimento=1`; encolhimento do hero (área da foto antes/depois), deslocamento do trilho, arraste e teclado da cortina, troca de materiais, formulários, gaveta de portfólio, menu móvel, erros de console.
 
-## Pendências explícitas
+## Pendências
 
-- Figma: nenhum arquivo/destino informado; implementação seguiu DESIGN.md (autorizado no briefing).
-- Dados reais da empresa, retratos autorizados, CAU reais, números comprovados, revisão jurídica das minutas.
-- Backend do formulário.
+- Figma sem arquivo definido (autorizado seguir pelo DESIGN.md).
+- Dados reais da empresa, retratos autorizados, obras e números comprovados, revisão jurídica, backend dos formulários.

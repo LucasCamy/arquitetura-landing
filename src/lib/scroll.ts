@@ -10,7 +10,7 @@ export { gsap, ScrollTrigger, useGSAP }
 
 const REDUCED_QUERY = '(prefers-reduced-motion: reduce)'
 export const DESKTOP_QUERY = '(min-width: 1024px)'
-export const NAV_HEIGHT = 64
+export const NAV_HEIGHT = 72
 
 /**
  * `?movimento=1` força as animações mesmo com "reduzir movimento" ligado no sistema;
@@ -127,8 +127,8 @@ export function unlockScroll() {
   lenis?.start()
 }
 
-export function scrollToY(y: number) {
-  if (lenis) lenis.scrollTo(y, { duration: 1.2 })
+export function scrollToY(y: number, immediate = false) {
+  if (lenis) lenis.scrollTo(y, immediate ? { immediate: true, force: true } : { duration: 1.2 })
   else window.scrollTo({ top: y, behavior: 'auto' })
 }
 
