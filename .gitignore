@@ -1,0 +1,8 @@
+node_modules
+dist
+*.tsbuildinfo
+.validation
+.validation-*.log
+.vite
+_arquivo
+img

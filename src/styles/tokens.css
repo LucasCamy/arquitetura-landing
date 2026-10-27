@@ -1,0 +1,58 @@
+/* Tokens do Atelier Vértice. Valores e contraste documentados em DESIGN.md. */
+:root {
+  --basalt: #0c0c0b;
+  --stone: #141412;
+  --stone-2: #1b1b18;
+  --line: rgba(239, 236, 230, 0.12);
+  --line-strong: rgba(239, 236, 230, 0.28);
+  --limestone: #efece6;
+  --ash: #9a968e;
+  --clay: #c65d3b;
+  --clay-ink: #d9774f;
+  --ok: #9cc3a0;
+  --error: #e58a72;
+  --scrim: rgba(12, 12, 11, 0.88);
+
+  --font-display: 'Big Shoulders Display Variable', 'Arial Narrow', sans-serif;
+  --font-sans: 'Hanken Grotesk Variable', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  --nav-h: 64px;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-1: 120ms;
+  --dur-2: 180ms;
+  --dur-3: 280ms;
+  --dur-4: 560ms;
+  --dur-5: 900ms;
+
+  --shadow-dialog: 0 24px 60px -20px rgba(12, 12, 11, 0.9);
+}
+
+@theme inline {
+  --color-basalt: var(--basalt);
+  --color-stone: var(--stone);
+  --color-stone-2: var(--stone-2);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-limestone: var(--limestone);
+  --color-ash: var(--ash);
+  --color-clay: var(--clay);
+  --color-clay-ink: var(--clay-ink);
+  --color-ok: var(--ok);
+  --color-error: var(--error);
+  --color-scrim: var(--scrim);
+
+  --font-display: var(--font-display);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  --radius-badge: 2px;
+  --radius-control: 4px;
+  --radius-dialog: 6px;
+
+  --ease-out: var(--ease-out);
+  --ease-in-out: var(--ease-in-out);
+  --shadow-dialog: var(--shadow-dialog);
+}
