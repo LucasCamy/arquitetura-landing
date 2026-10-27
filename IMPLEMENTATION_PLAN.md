@@ -54,7 +54,7 @@ Mantidas: react, react-dom, gsap, @gsap/react, lenis, @phosphor-icons/react, Han
 
 ## Performance
 
-Hero com preload AVIF e `fetchpriority="high"`; fotos em `<picture>` AVIF + WebP; 120 quadros AVIF ≈ 4,1 MB só perto da cena; vídeo do hero só no desktop. Código: bundle inicial (app 16,6 kB + React 68 kB + GSAP 45 kB gzip), `BelowFold` 19,8 kB e Lenis 5,4 kB sob demanda.
+Hero com preload AVIF e `fetchpriority="high"`; fotos em `<picture>` AVIF + WebP; 120 quadros AVIF 1280×720 ≈ 5,6 MB só perto da cena; vídeo do hero (2,3 MB, loop sem emenda) só no desktop. Código: bundle inicial (app 16,6 kB + React 68 kB + GSAP 45 kB gzip), `BelowFold` 19,8 kB e Lenis 5,4 kB sob demanda.
 
 ## Testes
 

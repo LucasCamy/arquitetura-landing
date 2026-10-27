@@ -84,8 +84,9 @@ export type FrameFormat = 'avif' | 'webp'
 /** Quadros "do croqui à obra": /media/frames/frame_0001.avif|webp .. frame_0120. */
 export const frameSequence = {
   count: sequence.frameCount,
-  width: sequence.frameWidth,
-  height: sequence.frameHeight,
+  // Reextraídos de canvas-sequence.mp4 (1920×1080) em 1280×720; o manifesto ainda descreve 1024×576.
+  width: 1280,
+  height: 720,
   fps: sequence.frameRate,
   alt: sequence.alt,
   src: (index: number, format: FrameFormat = 'webp') =>

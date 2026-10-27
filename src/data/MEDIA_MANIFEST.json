@@ -139,8 +139,8 @@
       "credit": "Derivado de imagens geradas para este projeto",
       "path": "media/hero-ambient.mp4",
       "sourcePaths": [
-        "media/hero-main.webp",
-        "media/bento-02-detail.webp"
+        "source/hero-main-source.png",
+        "source/bento-02-detail-source.png"
       ],
       "alt": "Residência brutalista ao blue hour e detalhe de escada de concreto e madeira, com luz e movimento de câmera sutis.",
       "width": 1920,
@@ -162,7 +162,7 @@
       "path": "media/canvas-sequence.mp4",
       "sourcePaths": [
         "media/sketch-before.webp",
-        "media/hero-main.webp"
+        "source/hero-main-source.png"
       ],
       "alt": "Croqui técnico de uma residência brutalista transforma-se gradualmente na fotografia da obra ao blue hour.",
       "width": 1920,
@@ -254,7 +254,7 @@
     "frameHeight": 1080,
     "videoCodec": "H.264",
     "videoDurationSeconds": 5,
-    "notes": "Sequências e ambiências são geradas das imagens locais do projeto com Python, OpenCV e FFmpeg.",
+    "notes": "Vídeos e quadros renderizados a partir dos PNGs originais; H.264 CRF 16, WebP qualidade 92 e AVIF CRF 27.",
     "frameRate": 24
   }
 }

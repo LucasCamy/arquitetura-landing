@@ -28,7 +28,10 @@ src/components/nav/          Navbar, MobileMenu, ChapterRuler, FloatingCta
 src/components/sections/     uma seção por arquivo, na ordem do documento
 src/BelowFold.tsx            seções abaixo do hero + rodapé, carregadas sob demanda (React.lazy)
 scripts/validate.mjs         validação Playwright
-scripts/gerar-midia.mjs      gera croqui alinhado a hero-main.webp e as 6 amostras de material
+scripts/gerar-midia.mjs      gera croqui anotado e as 6 amostras de material
+Dockerfile, docker/nginx.conf imagem de produção (nginx-unprivileged, porta 8080, /healthz)
+k8s/deploy.yaml              Deployment + Service do Cloudlane Homelab (landingpages, porta 8214)
+.github/workflows/deploy.yml build linux/amd64 e push para ghcr.io/lucascamy/arquitetura-landing
 ```
 
 ## Comandos
@@ -61,11 +64,17 @@ Sem o Chromium do Playwright baixado, os scripts usam o Edge/Chrome instalado.
 - Os AVIF de `public/media/frames/` foram regerados: o script do pacote usa `-still-picture 1`, que grava o box `av1C` vazio e faz Chrome/Edge recusarem os arquivos (os AVIF das fotos vêm corretos). Não sobrescreva com cópias de `img/frames/`; regere quadro a quadro:
   `ffmpeg -i img/frames/frame_0001.webp -frames:v 1 -vf format=yuv420p -c:v libaom-av1 -crf 30 -b:v 0 -cpu-used 6 public/media/frames/frame_0001.avif`
 - O croqui anotado é `sketch-before.webp` (mesmas dimensões e enquadramento de `hero-main.webp`) com notas à mão. Se o pacote mudar, rode `npm run media:generate` e revise as posições das anotações em `scripts/gerar-midia.mjs`.
-- `hero-ambient.mp4` (2,6 MB) só é usado no desktop com movimento, com botão de pausa.
+- `public/media/hero-ambient.mp4` é uma versão web do vídeo do pacote: loop de 4,5 s com os últimos 0,5 s fundidos aos primeiros (sem salto de enquadramento), H.264 CRF 23 faststart, 2,3 MB (o original tem 5,3 MB). Só é usado no desktop com movimento, com botão de pausa. Para regerar:
+  `ffmpeg -i img/hero-ambient.mp4 -filter_complex "[0]trim=start=0.5,setpts=PTS-STARTPTS[m];[0]trim=end=0.5,setpts=PTS-STARTPTS[h];[m][h]xfade=transition=fade:duration=0.5:offset=4.0,format=yuv420p[v]" -map "[v]" -c:v libx264 -preset slow -crf 23 -movflags +faststart -an public/media/hero-ambient.mp4`
+- `public/media/frames/` são reextraídos de `img/canvas-sequence.mp4` (1920×1080) em 1280×720 (WebP q82 + AVIF CRF 32, ≈ 5,6 MB em AVIF); os do pacote estão em 1024×576. `canvas-sequence.mp4` não é servido.
 
 ## Validação
 
 `typecheck`, `build` e `validate:browser` (desktop e celular, `reducedMotion` `no-preference` e `reduce`, mais `?movimento=1`). Conferir screenshots em `.validation/`. A preferência do pacote de skills é estruturar UI no Figma antes do código; ainda não há arquivo Figma definido para este projeto.
+
+## Deploy (Cloudlane Homelab)
+
+Segue a skill `cloudlane-homelab` (repositório `LucasCamy/homelab-docs`): push na `main` → GitHub Actions publica `ghcr.io/lucascamy/arquitetura-landing:latest` → Keel faz o rollout em até 1 min. Namespace `landingpages`, Service LoadBalancer `192.168.15.19:8214` → contêiner 8080, público em `https://arquitetura.cloudlane.com.br` pelo Cloudlane Tunnel. Teste local da imagem: `docker build -t arquitetura-landing:local .` e `docker run --read-only --tmpfs /tmp -p 4318:8080 arquitetura-landing:local`.
 
 ## Segurança e publicação
 
