@@ -74,7 +74,7 @@ Sem o Chromium do Playwright baixado, os scripts usam o Edge/Chrome instalado.
 
 ## Deploy (Cloudlane Homelab)
 
-Segue a skill `cloudlane-homelab` (repositório `LucasCamy/homelab-docs`): push na `main` → GitHub Actions publica `ghcr.io/lucascamy/arquitetura-landing:latest` → Keel faz o rollout em até 1 min. Namespace `landingpages`, Service LoadBalancer `192.168.15.19:8214` → contêiner 8080, público em `https://arquitetura.cloudlane.com.br` pelo Cloudlane Tunnel. Teste local da imagem: `docker build -t arquitetura-landing:local .` e `docker run --read-only --tmpfs /tmp -p 4318:8080 arquitetura-landing:local`.
+Segue a skill `cloudlane-homelab` (repositório `LucasCamy/homelab-docs`): push na `main` → GitHub Actions publica `ghcr.io/lucascamy/arquitetura-landing:latest` → Keel faz o rollout em até 1 min. Namespace `landingpages`, Service LoadBalancer `192.168.15.19:8214` → contêiner 8080, público em `https://arquitetura.cloudlane.com.br` pelo Cloudlane Tunnel. Monitorado no Uptime Kuma (monitor 31, "Moura (Arquitetura)", `http://192.168.15.19:8214/healthz`, grupo "Aplicações & Web Services" da status page). Teste local da imagem: `docker build -t arquitetura-landing:local .` e `docker run --read-only --tmpfs /tmp -p 4318:8080 arquitetura-landing:local`.
 
 ## Segurança e publicação
 
